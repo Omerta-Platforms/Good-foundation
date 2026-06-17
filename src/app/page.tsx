@@ -28,9 +28,9 @@ import {
   PlayCircle,
   ExternalLink
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { formatDate } from '@/lib/utils'
 
 // Mock data - replace with real data from API
