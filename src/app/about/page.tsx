@@ -25,9 +25,9 @@ import {
   Instagram,
   Youtube
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent } from '@/components/ui/Card'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const managementTeam = [
   { name: 'Dr. Adebayo Ogunlade', position: 'Principal', image: '/images/principal.jpg' },
