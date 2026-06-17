@@ -199,13 +199,13 @@ export default function HomePage() {
               Knowledge for Progress
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 font-light">
-              "Empowering the next generation with excellence, integrity, and leadership"
+              &ldquo;Empowering the next generation with excellence, integrity, and leadership&rdquo;
             </p>
             
             <Card className="text-left">
               <CardContent className="p-8">
                 <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
-                  Principal's Welcome Message
+                  Principal&apos;s Welcome Message
                 </h3>
                 <div className="flex items-start space-x-6">
                   <div className="flex-shrink-0">
@@ -245,15 +245,18 @@ export default function HomePage() {
               { icon: GraduationCap, label: 'Graduates', value: '5,000+' },
               { icon: BookOpen, label: 'Subjects', value: '45+' },
               { icon: Award, label: 'Awards', value: '120+' }
-            ].map((stat, index) => (
-              <Card key={index}>
-                <CardContent className="p-6 text-center">
-                  <stat.icon className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
-                  <p className="text-3xl font-bold text-gray-800 dark:text-gray-200">{stat.value}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-                </CardContent>
-              </Card>
-            ))}
+            ].map((stat, index) => {
+              const Icon = stat.icon
+              return (
+                <Card key={index}>
+                  <CardContent className="p-6 text-center">
+                    <Icon className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
+                    <p className="text-3xl font-bold text-gray-800 dark:text-gray-200">{stat.value}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -263,7 +266,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
-              Latest News & Events
+              Latest News &amp; Events
             </h2>
             <Link href="#" className="text-primary-600 dark:text-primary-400 hover:underline flex items-center">
               View All
@@ -452,7 +455,51 @@ export default function HomePage() {
                 <li><Link href="/result-checker" className="hover:text-white transition-colors">Check Results</Link></li>
               </ul>
             </div>
-
-            {/* Contact */}
+              
+             {/* Contact */}
             <div>
-              <h4 className="font-semibol
+              <h4 className="font-semibold mb-4">Contact</h4>
+              <ul className="space-y-3 text-sm text-gray-400">
+                <li className="flex items-start space-x-2">
+                  <MapPin className="h-5 w-5 text-primary-400 flex-shrink-0 mt-0.5" />
+                  <span>123 Education Avenue, Lafia, Nasarawa State, Nigeria</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <Phone className="h-5 w-5 text-primary-400" />
+                  <span>+234 800 123 4567</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <Mail className="h-5 w-5 text-primary-400" />
+                  <span>info@progressschools.edu.ng</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Newsletter */}
+            <div>
+              <h4 className="font-semibold mb-4">Stay Updated</h4>
+              <p className="text-sm text-gray-400 mb-3">
+                Subscribe to our newsletter for updates and announcements.
+              </p>
+              <div className="flex">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="flex-1 px-3 py-2 bg-gray-800 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <Button variant="default" size="sm" className="rounded-l-none bg-primary-600 hover:bg-primary-700">
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
+            <p>&copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.</p>
+            <p className="mt-1">Knowledge for Progress</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
