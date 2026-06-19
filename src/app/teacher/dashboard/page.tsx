@@ -100,6 +100,23 @@ interface Result {
   }
 }
 
+// Types for Excel imports
+interface ExcelRow {
+  email: string
+  password?: string
+  first_name: string
+  last_name: string
+  admission_number: string
+  date_of_birth?: string
+  parent_phone?: string
+  parent_email?: string
+}
+
+interface ResultRow {
+  admission_number: string
+  score: number
+}
+
 export default function TeacherDashboard() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -288,7 +305,7 @@ export default function TeacherDashboard() {
         const data = new Uint8Array(e.target?.result as ArrayBuffer)
         const workbook = XLSX.read(data, { type: 'array' })
         const sheet = workbook.Sheets[workbook.SheetNames[0]]
-        const jsonData = XLSX.utils.sheet_to_json(sheet)
+        const jsonData: ExcelRow[] = XLSX.utils.sheet_to_json(sheet)
 
         let successCount = 0
         let errorCount = 0
@@ -382,6 +399,12 @@ export default function TeacherDashboard() {
 
   // 4. UPLOAD RESULTS (Excel)
   const handleUploadResults = async (file: File) => {
+    if (!selectedSubject) {
+      toast.error('Please select a subject first')
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     try {
       const reader = new FileReader()
@@ -389,7 +412,7 @@ export default function TeacherDashboard() {
         const data = new Uint8Array(e.target?.result as ArrayBuffer)
         const workbook = XLSX.read(data, { type: 'array' })
         const sheet = workbook.Sheets[workbook.SheetNames[0]]
-        const jsonData = XLSX.utils.sheet_to_json(sheet)
+        const jsonData: ResultRow[] = XLSX.utils.sheet_to_json(sheet)
 
         let successCount = 0
         let errorCount = 0
@@ -409,7 +432,7 @@ export default function TeacherDashboard() {
               continue
             }
 
-            const score = parseFloat(row.score)
+            const score = parseFloat(String(row.score))
             if (isNaN(score) || score < 0 || score > 100) {
               errorCount++
               console.error('Invalid score:', row.score)
@@ -562,7 +585,7 @@ export default function TeacherDashboard() {
     const ws = XLSX.utils.json_to_sheet(template)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Results')
-    XLSX.writeFile(wb, `results_template_${selectedSubject}.xlsx`)
+    XLSX.writeFile(wb, `results_template_${new Date().getTime()}.xlsx`)
     toast.success('Template downloaded!')
   }
 
@@ -779,7 +802,10 @@ export default function TeacherDashboard() {
 
               {/* Quick Actions */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => { setActiveTab('students'); setShowAddStudent(true); }}>
+                <Card 
+                  className="hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => { setActiveTab('students'); setShowAddStudent(true); }}
+                >
                   <CardContent className="p-6 text-center">
                     <UserPlus className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200">Add Student</h3>
@@ -787,7 +813,10 @@ export default function TeacherDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('subjects')}>
+                <Card 
+                  className="hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => setActiveTab('subjects')}
+                >
                   <CardContent className="p-6 text-center">
                     <BookPlus className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200">Add Subject</h3>
@@ -795,7 +824,10 @@ export default function TeacherDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab('results')}>
+                <Card 
+                  className="hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => setActiveTab('results')}
+                >
                   <CardContent className="p-6 text-center">
                     <Upload className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200">Upload Results</h3>
@@ -803,7 +835,10 @@ export default function TeacherDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => { setActiveTab('results'); handlePublishResults(); }}>
+                <Card 
+                  className="hover:shadow-lg transition-shadow cursor-pointer" 
+                  onClick={() => { setActiveTab('results'); handlePublishResults(); }}
+                >
                   <CardContent className="p-6 text-center">
                     <CheckCircle className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200">Publish Results</h3>
@@ -1035,7 +1070,7 @@ export default function TeacherDashboard() {
                   <Card key={subject.id} className="hover:shadow-lg transition-shadow">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
-                      <div>
+                        <div>
                           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                             {subject.name}
                           </h3>
