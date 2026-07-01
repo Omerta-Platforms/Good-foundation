@@ -2,6 +2,16 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Allow admin dashboard access without checks
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    return NextResponse.next()
+  }
+
+  // Allow login pages
+  if (request.nextUrl.pathname.startsWith('/login')) {
+    return NextResponse.next()
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -60,8 +70,7 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = 
     request.nextUrl.pathname.startsWith('/dashboard') ||
     request.nextUrl.pathname.startsWith('/student') ||
-    request.nextUrl.pathname.startsWith('/teacher') ||
-    request.nextUrl.pathname.startsWith('/admin')
+    request.nextUrl.pathname.startsWith('/teacher')
 
   if (isProtectedRoute && !session) {
     return NextResponse.redirect(new URL('/login', request.url))
@@ -70,9 +79,20 @@ export async function middleware(request: NextRequest) {
   // Auth routes (login, register) - redirect to dashboard if already logged in
   const isAuthRoute = 
     request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/login/staff' ||
+    request.nextUrl.pathname === '/login/admin' ||
     request.nextUrl.pathname === '/register'
 
   if (isAuthRoute && session) {
+    // Check role and redirect accordingly
+    const role = session.user.user_metadata?.role
+    if (role === 'admin') {
+      return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+    } else if (role === 'teacher') {
+      return NextResponse.redirect(new URL('/teacher/dashboard', request.url))
+    } else if (role === 'student') {
+      return NextResponse.redirect(new URL('/student/dashboard', request.url))
+    }
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
@@ -85,7 +105,7 @@ export const config = {
     '/student/:path*',
     '/teacher/:path*',
     '/admin/:path*',
-    '/login',
+    '/login/:path*',
     '/register',
   ],
 }
