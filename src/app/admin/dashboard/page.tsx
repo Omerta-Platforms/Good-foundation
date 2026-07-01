@@ -34,7 +34,8 @@ import {
   Filter,
   Plus,
   Edit,
-  Trash2
+  Trash2,
+  ChevronRight
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
