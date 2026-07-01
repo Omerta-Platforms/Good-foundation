@@ -27,12 +27,10 @@ export default function AdminLoginPage() {
     setIsLoading(true)
 
     try {
-      // ✅ DIRECT REDIRECT - NO CHECKS
       toast.success('Welcome Admin!')
       
-      // ✅ FORCE REDIRECT TO ADMIN DASHBOARD
-      router.push('/admin/dashboard')
-      router.refresh() // Force refresh
+      // ✅ USE WINDOW.LOCATION FOR HARD REDIRECT
+      window.location.href = '/admin/dashboard'
       
     } catch (error) {
       toast.error('Something went wrong')
