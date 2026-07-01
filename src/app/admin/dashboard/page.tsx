@@ -7,55 +7,33 @@ import {
   Users, 
   GraduationCap, 
   BookOpen, 
-  DollarSign, 
-  Bell, 
-  Download,
-  Eye,
-  Printer,
-  FileText,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  TrendingUp,
-  Award,
   BarChart3,
-  Settings,
+  Bell, 
+  Home,
   LogOut,
   Menu,
-  Home,
-  UserPlus,
-  ClipboardList,
-  CreditCard,
-  MessageSquare,
-  HelpCircle,
-  PieChart,
-  Calendar,
-  Search,
-  Filter,
+  X,
   Plus,
   Edit,
   Trash2,
+  Search,
   ChevronRight,
-  X,
-  Mail,
-  Lock,
-  Phone,
-  Calendar as CalendarIcon,
-  User,
-  School,
-  BookOpen as BookOpenIcon,
-  Briefcase
+  DollarSign,
+  AlertCircle,
+  UserPlus,
+  ClipboardList,
+  CreditCard,
+  Settings
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { formatDate, formatCurrency } from '@/lib/utils'
 import { supabase } from '@/lib/supabase/client'
 import { createClient } from '@supabase/supabase-js'
 import toast from 'react-hot-toast'
 
-// Use service role for admin operations
+// Admin client for creating users
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -65,149 +43,76 @@ export default function AdminDashboard() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedClass, setSelectedClass] = useState('all')
   const [loading, setLoading] = useState(false)
-  
-  // Real data from Supabase
-  const [stats, setStats] = useState({
-    totalStudents: 0,
-    totalTeachers: 0,
-    totalClasses: 0,
-    publishedResults: 0,
-    totalRevenue: 0,
-    pendingFees: 0
-  })
   const [students, setStudents] = useState<any[]>([])
   const [teachers, setTeachers] = useState<any[]>([])
   const [classes, setClasses] = useState<any[]>([])
   const [subjects, setSubjects] = useState<any[]>([])
-  const [payments, setPayments] = useState<any[]>([])
+  
+  // Stats
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    totalTeachers: 0,
+    totalClasses: 0
+  })
 
   // Modal states
   const [showAddStudent, setShowAddStudent] = useState(false)
   const [showAddTeacher, setShowAddTeacher] = useState(false)
   const [showAddClass, setShowAddClass] = useState(false)
   const [showAddSubject, setShowAddSubject] = useState(false)
-  const [showEditStudent, setShowEditStudent] = useState(false)
-  const [editingStudent, setEditingStudent] = useState<any>(null)
 
-  // New form states
+  // New student form
   const [newStudent, setNewStudent] = useState({
     email: '',
     password: '',
     first_name: '',
     last_name: '',
     admission_number: '',
-    class_id: '',
-    date_of_birth: '',
-    parent_phone: '',
-    parent_email: ''
+    class_id: ''
   })
 
+  // New teacher form
   const [newTeacher, setNewTeacher] = useState({
     email: '',
     password: '',
     staff_id: '',
     first_name: '',
-    last_name: '',
-    phone: '',
-    subject_id: ''
+    last_name: ''
   })
 
+  // New class form
   const [newClass, setNewClass] = useState({
     name: '',
-    teacher_id: '',
     capacity: ''
   })
 
+  // New subject form
   const [newSubject, setNewSubject] = useState({
     name: '',
-    class_id: '',
-    teacher_id: ''
+    class_id: ''
   })
 
-  // Fetch real data on load
+  // Fetch data
   useEffect(() => {
-    fetchDashboardData()
+    fetchData()
   }, [])
 
-  // Close sidebar on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const sidebar = document.getElementById('admin-sidebar')
-      const toggleButton = document.getElementById('sidebar-toggle')
-      
-      if (sidebarOpen && sidebar && !sidebar.contains(event.target as Node) && 
-          toggleButton && !toggleButton.contains(event.target as Node)) {
-        setSidebarOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [sidebarOpen])
-
-  const fetchDashboardData = async () => {
+  const fetchData = async () => {
     setLoading(true)
     try {
-      // Get total students
-      const { count: studentCount } = await supabase
-        .from('students')
-        .select('*', { count: 'exact', head: true })
-      
-      // Get total teachers
-      const { count: teacherCount } = await supabase
-        .from('teachers')
-        .select('*', { count: 'exact', head: true })
-      
-      // Get total classes
-      const { count: classCount } = await supabase
-        .from('classes')
-        .select('*', { count: 'exact', head: true })
-      
-      // Get published results
-      const { count: resultCount } = await supabase
-        .from('results')
-        .select('*', { count: 'exact', head: true })
-        .eq('published', true)
-      
-      // Get recent students
+      // Get students
       const { data: studentData } = await supabase
         .from('students')
         .select('*, class:classes(name)')
-        .order('created_at', { ascending: false })
-        .limit(10)
+        .limit(20)
       
-      // Get all teachers
+      // Get teachers
       const { data: teacherData } = await supabase
         .from('teachers')
-        .select('*, subject:subjects(name)')
+        .select('*')
       
-      // Get recent payments
-      const { data: paymentData } = await supabase
-        .from('payments')
-        .select('*, student:students(first_name, last_name)')
-        .order('created_at', { ascending: false })
-        .limit(5)
-      
-      // Get total revenue
-      const { data: revenueData } = await supabase
-        .from('payments')
-        .select('amount')
-        .eq('status', 'paid')
-      
-      const totalRevenue = revenueData?.reduce((sum, p) => sum + p.amount, 0) || 0
-      
-      // Get pending fees
-      const { data: pendingData } = await supabase
-        .from('payments')
-        .select('amount')
-        .eq('status', 'pending')
-      
-      const pendingFees = pendingData?.reduce((sum, p) => sum + p.amount, 0) || 0
-
-      // Get classes for filter
+      // Get classes
       const { data: classData } = await supabase
         .from('classes')
         .select('*')
@@ -217,64 +122,38 @@ export default function AdminDashboard() {
         .from('subjects')
         .select('*, class:classes(name)')
       
-      setClasses(classData || [])
-      setTeachers(teacherData || [])
+      // Get counts
+      const { count: studentCount } = await supabase
+        .from('students')
+        .select('*', { count: 'exact', head: true })
+      
+      const { count: teacherCount } = await supabase
+        .from('teachers')
+        .select('*', { count: 'exact', head: true })
+      
+      const { count: classCount } = await supabase
+        .from('classes')
+        .select('*', { count: 'exact', head: true })
+
       setStudents(studentData || [])
-      setPayments(paymentData || [])
+      setTeachers(teacherData || [])
+      setClasses(classData || [])
       setSubjects(subjectData || [])
       
       setStats({
         totalStudents: studentCount || 0,
         totalTeachers: teacherCount || 0,
-        totalClasses: classCount || 0,
-        publishedResults: resultCount || 0,
-        totalRevenue: totalRevenue,
-        pendingFees: pendingFees
+        totalClasses: classCount || 0
       })
 
     } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-      toast.error('Failed to load dashboard data')
+      console.error('Error:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  // Search students
-  const searchStudents = async () => {
-    if (!searchQuery) {
-      fetchDashboardData()
-      return
-    }
-
-    setLoading(true)
-    try {
-      let query = supabase
-        .from('students')
-        .select('*, class:classes(name)')
-      
-      if (searchQuery) {
-        query = query.or(
-          `first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,admission_number.ilike.%${searchQuery}%`
-        )
-      }
-      
-      if (selectedClass !== 'all') {
-        query = query.eq('class_id', selectedClass)
-      }
-      
-      const { data } = await query
-      setStudents(data || [])
-      
-    } catch (error) {
-      toast.error('Search failed')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // ==================== STUDENT CRUD ====================
-
+  // ADD STUDENT
   const handleAddStudent = async () => {
     if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
       toast.error('Please fill in all required fields')
@@ -283,6 +162,7 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
+      // Create auth user
       const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: newStudent.email,
         password: newStudent.password,
@@ -296,6 +176,7 @@ export default function AdminDashboard() {
 
       if (authError) throw authError
 
+      // Create student record
       const { error: studentError } = await supabase
         .from('students')
         .insert({
@@ -305,28 +186,15 @@ export default function AdminDashboard() {
           first_name: newStudent.first_name,
           last_name: newStudent.last_name,
           admission_number: newStudent.admission_number,
-          class_id: newStudent.class_id || null,
-          date_of_birth: newStudent.date_of_birth || null,
-          parent_phone: newStudent.parent_phone || null,
-          parent_email: newStudent.parent_email || null
+          class_id: newStudent.class_id || null
         })
 
       if (studentError) throw studentError
 
       toast.success('Student added successfully!')
       setShowAddStudent(false)
-      setNewStudent({
-        email: '',
-        password: '',
-        first_name: '',
-        last_name: '',
-        admission_number: '',
-        class_id: '',
-        date_of_birth: '',
-        parent_phone: '',
-        parent_email: ''
-      })
-      fetchDashboardData()
+      setNewStudent({ email: '', password: '', first_name: '', last_name: '', admission_number: '', class_id: '' })
+      fetchData()
 
     } catch (error: any) {
       toast.error(error.message || 'Failed to add student')
@@ -335,30 +203,22 @@ export default function AdminDashboard() {
     }
   }
 
+  // DELETE STUDENT
   const handleDeleteStudent = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this student?')) return
-
+    if (!confirm('Delete this student?')) return
     setLoading(true)
     try {
-      const { error } = await supabase
-        .from('students')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-
-      toast.success('Student deleted successfully!')
-      fetchDashboardData()
-
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete student')
+      await supabase.from('students').delete().eq('id', id)
+      toast.success('Student deleted')
+      fetchData()
+    } catch (error) {
+      toast.error('Failed to delete')
     } finally {
       setLoading(false)
     }
   }
 
-  // ==================== TEACHER CRUD ====================
-
+  // ADD TEACHER
   const handleAddTeacher = async () => {
     if (!newTeacher.email || !newTeacher.password || !newTeacher.first_name || !newTeacher.last_name || !newTeacher.staff_id) {
       toast.error('Please fill in all required fields')
@@ -380,33 +240,19 @@ export default function AdminDashboard() {
 
       if (authError) throw authError
 
-      const { error: teacherError } = await supabase
-        .from('teachers')
-        .insert({
-          id: authUser.user.id,
-          email: newTeacher.email,
-          staff_id: newTeacher.staff_id,
-          password: newTeacher.password,
-          first_name: newTeacher.first_name,
-          last_name: newTeacher.last_name,
-          phone: newTeacher.phone || null,
-          subject_id: newTeacher.subject_id || null
-        })
-
-      if (teacherError) throw teacherError
+      await supabase.from('teachers').insert({
+        id: authUser.user.id,
+        email: newTeacher.email,
+        staff_id: newTeacher.staff_id,
+        password: newTeacher.password,
+        first_name: newTeacher.first_name,
+        last_name: newTeacher.last_name
+      })
 
       toast.success('Teacher added successfully!')
       setShowAddTeacher(false)
-      setNewTeacher({
-        email: '',
-        password: '',
-        staff_id: '',
-        first_name: '',
-        last_name: '',
-        phone: '',
-        subject_id: ''
-      })
-      fetchDashboardData()
+      setNewTeacher({ email: '', password: '', staff_id: '', first_name: '', last_name: '' })
+      fetchData()
 
     } catch (error: any) {
       toast.error(error.message || 'Failed to add teacher')
@@ -415,30 +261,22 @@ export default function AdminDashboard() {
     }
   }
 
+  // DELETE TEACHER
   const handleDeleteTeacher = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this teacher?')) return
-
+    if (!confirm('Delete this teacher?')) return
     setLoading(true)
     try {
-      const { error } = await supabase
-        .from('teachers')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-
-      toast.success('Teacher deleted successfully!')
-      fetchDashboardData()
-
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete teacher')
+      await supabase.from('teachers').delete().eq('id', id)
+      toast.success('Teacher deleted')
+      fetchData()
+    } catch (error) {
+      toast.error('Failed to delete')
     } finally {
       setLoading(false)
     }
   }
 
-  // ==================== CLASS CRUD ====================
-
+  // ADD CLASS
   const handleAddClass = async () => {
     if (!newClass.name) {
       toast.error('Class name is required')
@@ -447,24 +285,15 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      const { error } = await supabase
-        .from('classes')
-        .insert({
-          name: newClass.name,
-          teacher_id: newClass.teacher_id || null,
-          capacity: parseInt(newClass.capacity) || 0
-        })
-
-      if (error) throw error
+      await supabase.from('classes').insert({
+        name: newClass.name,
+        capacity: parseInt(newClass.capacity) || 0
+      })
 
       toast.success('Class added successfully!')
       setShowAddClass(false)
-      setNewClass({
-        name: '',
-        teacher_id: '',
-        capacity: ''
-      })
-      fetchDashboardData()
+      setNewClass({ name: '', capacity: '' })
+      fetchData()
 
     } catch (error: any) {
       toast.error(error.message || 'Failed to add class')
@@ -473,30 +302,22 @@ export default function AdminDashboard() {
     }
   }
 
+  // DELETE CLASS
   const handleDeleteClass = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this class?')) return
-
+    if (!confirm('Delete this class?')) return
     setLoading(true)
     try {
-      const { error } = await supabase
-        .from('classes')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-
-      toast.success('Class deleted successfully!')
-      fetchDashboardData()
-
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete class')
+      await supabase.from('classes').delete().eq('id', id)
+      toast.success('Class deleted')
+      fetchData()
+    } catch (error) {
+      toast.error('Failed to delete')
     } finally {
       setLoading(false)
     }
   }
 
-  // ==================== SUBJECT CRUD ====================
-
+  // ADD SUBJECT
   const handleAddSubject = async () => {
     if (!newSubject.name || !newSubject.class_id) {
       toast.error('Subject name and class are required')
@@ -505,24 +326,15 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      const { error } = await supabase
-        .from('subjects')
-        .insert({
-          name: newSubject.name,
-          class_id: newSubject.class_id,
-          teacher_id: newSubject.teacher_id || null
-        })
-
-      if (error) throw error
+      await supabase.from('subjects').insert({
+        name: newSubject.name,
+        class_id: newSubject.class_id
+      })
 
       toast.success('Subject added successfully!')
       setShowAddSubject(false)
-      setNewSubject({
-        name: '',
-        class_id: '',
-        teacher_id: ''
-      })
-      fetchDashboardData()
+      setNewSubject({ name: '', class_id: '' })
+      fetchData()
 
     } catch (error: any) {
       toast.error(error.message || 'Failed to add subject')
@@ -531,23 +343,16 @@ export default function AdminDashboard() {
     }
   }
 
+  // DELETE SUBJECT
   const handleDeleteSubject = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this subject?')) return
-
+    if (!confirm('Delete this subject?')) return
     setLoading(true)
     try {
-      const { error } = await supabase
-        .from('subjects')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-
-      toast.success('Subject deleted successfully!')
-      fetchDashboardData()
-
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete subject')
+      await supabase.from('subjects').delete().eq('id', id)
+      toast.success('Subject deleted')
+      fetchData()
+    } catch (error) {
+      toast.error('Failed to delete')
     } finally {
       setLoading(false)
     }
@@ -561,32 +366,14 @@ export default function AdminDashboard() {
     { id: 'teachers', label: 'Teachers', icon: GraduationCap },
     { id: 'classes', label: 'Classes', icon: BookOpen },
     { id: 'subjects', label: 'Subjects', icon: ClipboardList },
-    { id: 'results', label: 'Results', icon: BarChart3 },
-    { id: 'fees', label: 'Fees', icon: CreditCard },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
   ]
-
-  // Loading state
-  if (loading && !students.length && !teachers.length) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="spinner mx-auto mb-4"></div>
-          <p className="text-gray-500 dark:text-gray-400">Loading dashboard...</p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
       {/* Sidebar */}
-      <aside 
-        id="admin-sidebar"
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
-      >
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0`}>
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center space-x-3">
@@ -619,11 +406,7 @@ export default function AdminDashboard() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id)
-                    if (item.id === 'dashboard') fetchDashboardData()
-                    setSidebarOpen(false)
-                  }}
+                  onClick={() => { setActiveTab(item.id); setSidebarOpen(false) }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
                       ? 'bg-primary-50 dark:bg-primary-950 text-primary-700 dark:text-primary-400'
@@ -659,12 +442,9 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* Overlay - click to close sidebar on mobile */}
+      {/* Mobile overlay */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Main Content */}
@@ -673,435 +453,269 @@ export default function AdminDashboard() {
         <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40">
           <div className="flex items-center justify-between px-4 py-4">
             <div className="flex items-center space-x-4">
-              <button id="sidebar-toggle"
+              <button
                 onClick={toggleSidebar}
                 className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                {sidebarOpen ? <X className="h-6 w-6 text-gray-600 dark:text-gray-400" /> : <Menu className="h-6 w-6 text-gray-600 dark:text-gray-400" />}
+                {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
               <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                {navItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
+                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
               </h1>
             </div>
-
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                 <Bell className="h-6 w-6 text-gray-600 dark:text-gray-400" />
               </button>
-              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                 <Settings className="h-6 w-6 text-gray-600 dark:text-gray-400" />
               </button>
             </div>
           </div>
         </header>
 
-        {/* Main Content Area */}
-        <main className="p-6 space-y-6">
-          {/* DASHBOARD TAB */}
-          {activeTab === 'dashboard' && (
+        {/* Content */}
+        <main className="p-6">
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="spinner"></div>
+            </div>
+          ) : (
             <>
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Total Students</p>
-                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.totalStudents}</p>
-                      </div>
-                      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* DASHBOARD */}
+              {activeTab === 'dashboard' && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-gray-500">Students</p>
+                            <p className="text-2xl font-bold">{stats.totalStudents}</p>
+                          </div>
+                          <Users className="h-8 w-8 text-blue-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-gray-500">Teachers</p>
+                            <p className="text-2xl font-bold">{stats.totalTeachers}</p>
+                          </div>
+                          <GraduationCap className="h-8 w-8 text-green-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-gray-500">Classes</p>
+                            <p className="text-2xl font-bold">{stats.totalClasses}</p>
+                          </div>
+                          <BookOpen className="h-8 w-8 text-purple-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
 
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Teachers</p>
-                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.totalTeachers}</p>
-                      </div>
-                      <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                        <GraduationCap className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  {/* Quick Actions */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddStudent(true)}>
+                      <CardContent className="p-4 text-center">
+                        <UserPlus className="h-8 w-8 text-primary-600 mx-auto mb-2" />
+                        <p className="text-sm font-medium">Add Student</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddTeacher(true)}>
+                      <CardContent className="p-4 text-center">
+                        <GraduationCap className="h-8 w-8 text-primary-600 mx-auto mb-2" />
+                        <p className="text-sm font-medium">Add Teacher</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddClass(true)}>
+                      <CardContent className="p-4 text-center">
+                        <BookOpen className="h-8 w-8 text-primary-600 mx-auto mb-2" />
+                        <p className="text-sm font-medium">Add Class</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddSubject(true)}>
+                      <CardContent className="p-4 text-center">
+                        <ClipboardList className="h-8 w-8 text-primary-600 mx-auto mb-2" />
+                        <p className="text-sm font-medium">Add Subject</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </>
+              )}
 
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Classes</p>
-                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.totalClasses}</p>
-                      </div>
-                      <div className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                        <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Results Published</p>
-                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.publishedResults}</p>
-                      </div>
-                      <div className="p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
-                        <BarChart3 className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Revenue</p>
-                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{formatCurrency(stats.totalRevenue)}</p>
-                      </div>
-                      <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                        <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Pending Fees</p>
-                        <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(stats.pendingFees)}</p>
-                      </div>
-                      <div className="p-2 bg-red-50 dark:bg-red-950/20 rounded-lg">
-                        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddStudent(true)}>
-                  <CardContent className="p-4 text-center">
-                    <UserPlus className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Student</p>
-                  </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddTeacher(true)}>
-                  <CardContent className="p-4 text-center">
-                    <GraduationCap className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Teacher</p>
-                  </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddClass(true)}>
-                  <CardContent className="p-4 text-center">
-                    <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Class</p>
-                  </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddSubject(true)}>
-                  <CardContent className="p-4 text-center">
-                    <ClipboardList className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Subject</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Recent Students */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Recent Students</CardTitle>
-                    <Button variant="outline" size="sm" onClick={() => setActiveTab('students')}>
-                      View All
-                      <ChevronRight className="ml-1 h-4 w-4" />
+              {/* STUDENTS */}
+              {activeTab === 'students' && (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Students ({students.length})</h2>
+                    <Button onClick={() => setShowAddStudent(true)}>
+                      <Plus className="h-4 w-4 mr-2" /> Add Student
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-200 dark:border-gray-800">
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Name</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Admission No</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Class</th>
-                          <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {students.slice(0, 5).map((student) => (
-                          <tr key={student.id} className="border-b border-gray-100 dark:border-gray-800/50">
-                            <td className="py-3 px-4 text-sm text-gray-800 dark:text-gray-200">
-                              {student.first_name} {student.last_name}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{student.admission_number}</td>
-                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{student.class?.name}</td>
-                            <td className="py-3 px-4 text-right">
-                              <Button variant="ghost" size="sm" onClick={() => handleDeleteStudent(student.id)}>
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
-
-          {/* STUDENTS TAB */}
-          {activeTab === 'students' && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Students ({students.length})</h2>
-                <Button onClick={() => setShowAddStudent(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Student
-                </Button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <Input
-                    placeholder="Search students..."
-                    className="pl-10"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && searchStudents()}
-                  />
+                  <Card>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-2 px-4">Name</th>
+                              <th className="text-left py-2 px-4">Admission No</th>
+                              <th className="text-left py-2 px-4">Class</th>
+                              <th className="text-right py-2 px-4">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {students.map((s) => (
+                              <tr key={s.id} className="border-b">
+                                <td className="py-2 px-4">{s.first_name} {s.last_name}</td>
+                                <td className="py-2 px-4">{s.admission_number}</td>
+                                <td className="py-2 px-4">{s.class?.name}</td>
+                                <td className="py-2 px-4 text-right">
+                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteStudent(s.id)}>
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                <select
-                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
-                  value={selectedClass}
-                  onChange={(e) => setSelectedClass(e.target.value)}
-                >
-                  <option value="all">All Classes</option>
-                  {classes.map((cls) => (
-                    <option key={cls.id} value={cls.id}>{cls.name}</option>
-                  ))}
-                </select>
-                <Button variant="outline" onClick={searchStudents}>
-                  <Search className="h-4 w-4 mr-2" />
-                  Search
-                </Button>
-              </div>
+              )}
 
-              <Card>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-200 dark:border-gray-800">
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Name</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Admission No</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Class</th>
-                          <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {students.map((student) => (
-                          <tr key={student.id} className="border-b border-gray-100">
-                            <td className="py-3 px-4 text-sm text-gray-800">
-                              {student.first_name} {student.last_name}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-600">{student.admission_number}</td>
-                            <td className="py-3 px-4 text-sm text-gray-600">{student.email}</td>
-                            <td className="py-3 px-4 text-sm text-gray-600">{student.class?.name}</td>
-                            <td className="py-3 px-4 text-right">
-                              <Button variant="ghost" size="sm" onClick={() => handleDeleteStudent(student.id)}>
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+              {/* TEACHERS */}
+              {activeTab === 'teachers' && (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Teachers ({teachers.length})</h2>
+                    <Button onClick={() => setShowAddTeacher(true)}>
+                      <Plus className="h-4 w-4 mr-2" /> Add Teacher
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* TEACHERS TAB */}
-          {activeTab === 'teachers' && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Teachers ({teachers.length})</h2>
-                <Button onClick={() => setShowAddTeacher(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Teacher
-                </Button>
-              </div>
-
-              <Card>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-200 dark:border-gray-800">
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Name</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Staff ID</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Subject</th>
-                          <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {teachers.map((teacher) => (
-                          <tr key={teacher.id} className="border-b border-gray-100">
-                            <td className="py-3 px-4 text-sm text-gray-800">
-                              {teacher.first_name} {teacher.last_name}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-600">{teacher.staff_id}</td>
-                            <td className="py-3 px-4 text-sm text-gray-600">{teacher.email}</td>
-                            <td className="py-3 px-4 text-sm text-gray-600">{teacher.subject?.name || 'Not assigned'}</td>
-                            <td className="py-3 px-4 text-right">
-                              <Button variant="ghost" size="sm" onClick={() => handleDeleteTeacher(teacher.id)}>
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* CLASSES TAB */}
-          {activeTab === 'classes' && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Classes ({classes.length})</h2>
-                <Button onClick={() => setShowAddClass(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Class
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {classes.map((cls) => (
-                  <Card key={cls.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{cls.name}</h3>
-                          <p className="text-sm text-gray-500">Capacity: {cls.capacity || 'Not set'}</p>
-                        </div>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteClass(cls.id)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                  <Card>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-2 px-4">Name</th>
+                              <th className="text-left py-2 px-4">Staff ID</th>
+                              <th className="text-left py-2 px-4">Email</th>
+                              <th className="text-right py-2 px-4">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {teachers.map((t) => (
+                              <tr key={t.id} className="border-b">
+                                <td className="py-2 px-4">{t.first_name} {t.last_name}</td>
+                                <td className="py-2 px-4">{t.staff_id}</td>
+                                <td className="py-2 px-4">{t.email}</td>
+                                <td className="py-2 px-4 text-right">
+                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteTeacher(t.id)}>
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
 
-          {/* SUBJECTS TAB */}
-          {activeTab === 'subjects' && (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Subjects ({subjects.length})</h2>
-                <Button onClick={() => setShowAddSubject(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Subject
-                </Button>
-              </div>
+              {/* CLASSES */}
+              {activeTab === 'classes' && (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Classes ({classes.length})</h2>
+                    <Button onClick={() => setShowAddClass(true)}>
+                      <Plus className="h-4 w-4 mr-2" /> Add Class
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {classes.map((c) => (
+                      <Card key={c.id}>
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h3 className="font-semibold">{c.name}</h3>
+                              <p className="text-sm text-gray-500">Capacity: {c.capacity || 'N/A'}</p>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteClass(c.id)}>
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {subjects.map((subject) => (
-                  <Card key={subject.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{subject.name}</h3>
-                          <p className="text-sm text-gray-500">Class: {subject.class?.name || 'Not assigned'}</p>
-                        </div>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteSubject(subject.id)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+              {/* SUBJECTS */}
+              {activeTab === 'subjects' && (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Subjects ({subjects.length})</h2>
+                    <Button onClick={() => setShowAddSubject(true)}>
+                      <Plus className="h-4 w-4 mr-2" /> Add Subject
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {subjects.map((s) => (
+                      <Card key={s.id}>
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h3 className="font-semibold">{s.name}</h3>
+                              <p className="text-sm text-gray-500">Class: {s.class?.name || 'N/A'}</p>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteSubject(s.id)}>
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
 
-      {/* ==================== MODALS ==================== */}
-
-      {/* Add Student Modal */}
+      {/* ADD STUDENT MODAL */}
       {showAddStudent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Add New Student</h2>
-              <button onClick={() => setShowAddStudent(false)} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="h-6 w-6" />
-              </button>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Add Student</h2>
+              <button onClick={() => setShowAddStudent(false)}><X className="h-6 w-6" /></button>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
-                <Input value={newStudent.first_name} onChange={(e) => setNewStudent({...newStudent, first_name: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
-                <Input value={newStudent.last_name} onChange={(e) => setNewStudent({...newStudent, last_name: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
-                <Input type="email" value={newStudent.email} onChange={(e) => setNewStudent({...newStudent, email: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password *</label>
-                <Input type="password" value={newStudent.password} onChange={(e) => setNewStudent({...newStudent, password: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Admission Number *</label>
-                <Input value={newStudent.admission_number} onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Class</label>
-                <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newStudent.class_id} onChange={(e) => setNewStudent({...newStudent, class_id: e.target.value})}>
-                  <option value="">Select Class</option>
-                  {classes.map((cls) => (
-                    <option key={cls.id} value={cls.id}>{cls.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
-                <Input type="date" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({...newStudent, date_of_birth: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Phone</label>
-                <Input value={newStudent.parent_phone} onChange={(e) => setNewStudent({...newStudent, parent_phone: e.target.value})} />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Email</label>
-                <Input type="email" value={newStudent.parent_email} onChange={(e) => setNewStudent({...newStudent, parent_email: e.target.value})} />
-              </div>
+              <Input placeholder="First Name *" value={newStudent.first_name} onChange={(e) => setNewStudent({...newStudent, first_name: e.target.value})} />
+              <Input placeholder="Last Name *" value={newStudent.last_name} onChange={(e) => setNewStudent({...newStudent, last_name: e.target.value})} />
+              <Input placeholder="Email *" type="email" value={newStudent.email} onChange={(e) => setNewStudent({...newStudent, email: e.target.value})} />
+              <Input placeholder="Password *" type="password" value={newStudent.password} onChange={(e) => setNewStudent({...newStudent, password: e.target.value})} />
+              <Input placeholder="Admission Number *" value={newStudent.admission_number} onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})} />
+              <select className="px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newStudent.class_id} onChange={(e) => setNewStudent({...newStudent, class_id: e.target.value})}>
+                <option value="">Select Class</option>
+                {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
             </div>
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddStudent(false)}>Cancel</Button>
@@ -1111,50 +725,20 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Add Teacher Modal */}
+      {/* ADD TEACHER MODAL */}
       {showAddTeacher && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Add New Teacher</h2>
-              <button onClick={() => setShowAddTeacher(false)} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="h-6 w-6" />
-              </button>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Add Teacher</h2>
+              <button onClick={() => setShowAddTeacher(false)}><X className="h-6 w-6" /></button>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
-                <Input value={newTeacher.first_name} onChange={(e) => setNewTeacher({...newTeacher, first_name: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
-                <Input value={newTeacher.last_name} onChange={(e) => setNewTeacher({...newTeacher, last_name: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
-                <Input type="email" value={newTeacher.email} onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password *</label>
-                <Input type="password" value={newTeacher.password} onChange={(e) => setNewTeacher({...newTeacher, password: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff ID *</label>
-                <Input value={newTeacher.staff_id} onChange={(e) => setNewTeacher({...newTeacher, staff_id: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
-                <Input value={newTeacher.phone} onChange={(e) => setNewTeacher({...newTeacher, phone: e.target.value})} />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject</label>
-                <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newTeacher.subject_id} onChange={(e) => setNewTeacher({...newTeacher, subject_id: e.target.value})}>
-                  <option value="">Select Subject</option>
-                  {subjects.map((subj) => (
-                    <option key={subj.id} value={subj.id}>{subj.name}</option>
-                  ))}
-                </select>
-              </div>
+              <Input placeholder="First Name *" value={newTeacher.first_name} onChange={(e) => setNewTeacher({...newTeacher, first_name: e.target.value})} />
+              <Input placeholder="Last Name *" value={newTeacher.last_name} onChange={(e) => setNewTeacher({...newTeacher, last_name: e.target.value})} />
+              <Input placeholder="Email *" type="email" value={newTeacher.email} onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})} />
+              <Input placeholder="Password *" type="password" value={newTeacher.password} onChange={(e) => setNewTeacher({...newTeacher, password: e.target.value})} />
+              <Input placeholder="Staff ID *" value={newTeacher.staff_id} onChange={(e) => setNewTeacher({...newTeacher, staff_id: e.target.value})} />
             </div>
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddTeacher(false)}>Cancel</Button>
@@ -1164,34 +748,17 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Add Class Modal */}
+      {/* ADD CLASS MODAL */}
       {showAddClass && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Add New Class</h2>
-              <button onClick={() => setShowAddClass(false)} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="h-6 w-6" />
-              </button>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Add Class</h2>
+              <button onClick={() => setShowAddClass(false)}><X className="h-6 w-6" /></button>
             </div>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Class Name *</label>
-                <Input value={newClass.name} onChange={(e) => setNewClass({...newClass, name: e.target.value})} placeholder="e.g., SS 3A" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Class Teacher</label>
-                <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newClass.teacher_id} onChange={(e) => setNewClass({...newClass, teacher_id: e.target.value})}>
-                  <option value="">Select Teacher</option>
-                  {teachers.map((teacher) => (
-                    <option key={teacher.id} value={teacher.id}>{teacher.first_name} {teacher.last_name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Capacity</label>
-                <Input type="number" value={newClass.capacity} onChange={(e) => setNewClass({...newClass, capacity: e.target.value})} placeholder="e.g., 40" />
-              </div>
+              <Input placeholder="Class Name *" value={newClass.name} onChange={(e) => setNewClass({...newClass, name: e.target.value})} />
+              <Input placeholder="Capacity" type="number" value={newClass.capacity} onChange={(e) => setNewClass({...newClass, capacity: e.target.value})} />
             </div>
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddClass(false)}>Cancel</Button>
@@ -1201,39 +768,20 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Add Subject Modal */}
+      {/* ADD SUBJECT MODAL */}
       {showAddSubject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Add New Subject</h2>
-              <button onClick={() => setShowAddSubject(false)} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="h-6 w-6" />
-              </button>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Add Subject</h2>
+              <button onClick={() => setShowAddSubject(false)}><X className="h-6 w-6" /></button>
             </div>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject Name *</label>
-                <Input value={newSubject.name} onChange={(e) => setNewSubject({...newSubject, name: e.target.value})} placeholder="e.g., Mathematics" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Class *</label>
-                <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newSubject.class_id} onChange={(e) => setNewSubject({...newSubject, class_id: e.target.value})}>
-                  <option value="">Select Class</option>
-                  {classes.map((cls) => (
-                    <option key={cls.id} value={cls.id}>{cls.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teacher</label>
-                <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newSubject.teacher_id} onChange={(e) => setNewSubject({...newSubject, teacher_id: e.target.value})}>
-                  <option value="">Select Teacher</option>
-                  {teachers.map((teacher) => (
-                    <option key={teacher.id} value={teacher.id}>{teacher.first_name} {teacher.last_name}</option>
-                  ))}
-                </select>
-              </div>
+              <Input placeholder="Subject Name *" value={newSubject.name} onChange={(e) => setNewSubject({...newSubject, name: e.target.value})} />
+              <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newSubject.class_id} onChange={(e) => setNewSubject({...newSubject, class_id: e.target.value})}>
+                <option value="">Select Class *</option>
+                {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
             </div>
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddSubject(false)}>Cancel</Button>
