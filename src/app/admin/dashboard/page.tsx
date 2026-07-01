@@ -276,94 +276,60 @@ export default function AdminDashboard() {
   // ==================== STUDENT CRUD ====================
 
   const handleAddStudent = async () => {
-  if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
-    toast.error('Please fill in all required fields')
-    return
-  }
-
-  setLoading(true)
-  try {
-    // Use service role client for admin operations
-    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: newStudent.email,
-      password: newStudent.password,
-      email_confirm: true,
-      user_metadata: { 
-        role: 'student',
-        first_name: newStudent.first_name,
-        last_name: newStudent.last_name
-      }
-    })
-
-    if (authError) throw authError
-
-    const { error: studentError } = await supabase
-      .from('students')
-      .insert({
-        id: authUser.user.id,
-        email: newStudent.email,
-        password: newStudent.password,
-        first_name: newStudent.first_name,
-        last_name: newStudent.last_name,
-        admission_number: newStudent.admission_number,
-        class_id: newStudent.class_id || null,
-        date_of_birth: newStudent.date_of_birth || null,
-        parent_phone: newStudent.parent_phone || null,
-        parent_email: newStudent.parent_email || null
-      })
-
-    if (studentError) throw studentError
-
-    toast.success('Student added successfully!')
-    setShowAddStudent(false)
-    setNewStudent({
-      email: '',
-      password: '',
-      first_name: '',
-      last_name: '',
-      admission_number: '',
-      class_id: '',
-      date_of_birth: '',
-      parent_phone: '',
-      parent_email: ''
-    })
-    fetchDashboardData()
-
-  } catch (error: any) {
-    toast.error(error.message || 'Failed to add student')
-  } finally {
-    setLoading(false)
-  }
-}
-
-  const handleEditStudent = async () => {
-    if (!editingStudent) return
+    if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
+      toast.error('Please fill in all required fields')
+      return
+    }
 
     setLoading(true)
     try {
-      const { error } = await supabase
+      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: newStudent.email,
+        password: newStudent.password,
+        email_confirm: true,
+        user_metadata: { 
+          role: 'student',
+          first_name: newStudent.first_name,
+          last_name: newStudent.last_name
+        }
+      })
+
+      if (authError) throw authError
+
+      const { error: studentError } = await supabase
         .from('students')
-        .update({
-          first_name: editingStudent.first_name,
-          last_name: editingStudent.last_name,
-          email: editingStudent.email,
-          admission_number: editingStudent.admission_number,
-          class_id: editingStudent.class_id,
-          date_of_birth: editingStudent.date_of_birth,
-          parent_phone: editingStudent.parent_phone,
-          parent_email: editingStudent.parent_email
+        .insert({
+          id: authUser.user.id,
+          email: newStudent.email,
+          password: newStudent.password,
+          first_name: newStudent.first_name,
+          last_name: newStudent.last_name,
+          admission_number: newStudent.admission_number,
+          class_id: newStudent.class_id || null,
+          date_of_birth: newStudent.date_of_birth || null,
+          parent_phone: newStudent.parent_phone || null,
+          parent_email: newStudent.parent_email || null
         })
-        .eq('id', editingStudent.id)
 
-      if (error) throw error
+      if (studentError) throw studentError
 
-      toast.success('Student updated successfully!')
-      setShowEditStudent(false)
-      setEditingStudent(null)
+      toast.success('Student added successfully!')
+      setShowAddStudent(false)
+      setNewStudent({
+        email: '',
+        password: '',
+        first_name: '',
+        last_name: '',
+        admission_number: '',
+        class_id: '',
+        date_of_birth: '',
+        parent_phone: '',
+        parent_email: ''
+      })
       fetchDashboardData()
 
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update student')
+      toast.error(error.message || 'Failed to add student')
     } finally {
       setLoading(false)
     }
@@ -394,61 +360,60 @@ export default function AdminDashboard() {
   // ==================== TEACHER CRUD ====================
 
   const handleAddTeacher = async () => {
-  if (!newTeacher.email || !newTeacher.password || !newTeacher.first_name || !newTeacher.last_name || !newTeacher.staff_id) {
-    toast.error('Please fill in all required fields')
-    return
-  }
+    if (!newTeacher.email || !newTeacher.password || !newTeacher.first_name || !newTeacher.last_name || !newTeacher.staff_id) {
+      toast.error('Please fill in all required fields')
+      return
+    }
 
-  setLoading(true)
-  try {
-    // Use service role client for admin operations
-    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: newTeacher.email,
-      password: newTeacher.password,
-      email_confirm: true,
-      user_metadata: { 
-        role: 'teacher',
-        first_name: newTeacher.first_name,
-        last_name: newTeacher.last_name
-      }
-    })
-
-    if (authError) throw authError
-
-    const { error: teacherError } = await supabase
-      .from('teachers')
-      .insert({
-        id: authUser.user.id,
+    setLoading(true)
+    try {
+      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: newTeacher.email,
-        staff_id: newTeacher.staff_id,
         password: newTeacher.password,
-        first_name: newTeacher.first_name,
-        last_name: newTeacher.last_name,
-        phone: newTeacher.phone || null,
-        subject_id: newTeacher.subject_id || null
+        email_confirm: true,
+        user_metadata: { 
+          role: 'teacher',
+          first_name: newTeacher.first_name,
+          last_name: newTeacher.last_name
+        }
       })
 
-    if (teacherError) throw teacherError
+      if (authError) throw authError
 
-    toast.success('Teacher added successfully!')
-    setShowAddTeacher(false)
-    setNewTeacher({
-      email: '',
-      password: '',
-      staff_id: '',
-      first_name: '',
-      last_name: '',
-      phone: '',
-      subject_id: ''
-    })
-    fetchDashboardData()
+      const { error: teacherError } = await supabase
+        .from('teachers')
+        .insert({
+          id: authUser.user.id,
+          email: newTeacher.email,
+          staff_id: newTeacher.staff_id,
+          password: newTeacher.password,
+          first_name: newTeacher.first_name,
+          last_name: newTeacher.last_name,
+          phone: newTeacher.phone || null,
+          subject_id: newTeacher.subject_id || null
+        })
 
-  } catch (error: any) {
-    toast.error(error.message || 'Failed to add teacher')
-  } finally {
-    setLoading(false)
+      if (teacherError) throw teacherError
+
+      toast.success('Teacher added successfully!')
+      setShowAddTeacher(false)
+      setNewTeacher({
+        email: '',
+        password: '',
+        staff_id: '',
+        first_name: '',
+        last_name: '',
+        phone: '',
+        subject_id: ''
+      })
+      fetchDashboardData()
+
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add teacher')
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   const handleDeleteTeacher = async (id: string) => {
     if (!confirm('Are you sure you want to delete this teacher?')) return
@@ -601,6 +566,18 @@ export default function AdminDashboard() {
     { id: 'notifications', label: 'Notifications', icon: Bell },
   ]
 
+  // Loading state
+  if (loading && !students.length && !teachers.length) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner mx-auto mb-4"></div>
+          <p className="text-gray-500 dark:text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
       {/* Sidebar */}
@@ -696,8 +673,7 @@ export default function AdminDashboard() {
         <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40">
           <div className="flex items-center justify-between px-4 py-4">
             <div className="flex items-center space-x-4">
-              <button
-                id="sidebar-toggle"
+              <button id="sidebar-toggle"
                 onClick={toggleSidebar}
                 className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
@@ -722,372 +698,352 @@ export default function AdminDashboard() {
 
         {/* Main Content Area */}
         <main className="p-6 space-y-6">
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="spinner"></div>
-            </div>
-          ) : (
+          {/* DASHBOARD TAB */}
+          {activeTab === 'dashboard' && (
             <>
-              {/* DASHBOARD TAB */}
-              {activeTab === 'dashboard' && (
-                <>
-                  {/* Stats Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Total Students</p>
-                            <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.totalStudents}</p>
-                          </div>
-                          <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                            <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Total Students</p>
+                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.totalStudents}</p>
+                      </div>
+                      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Teachers</p>
-                            <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.totalTeachers}</p>
-                          </div>
-                          <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                            <GraduationCap className="h-5 w-5 text-green-600 dark:text-green-400" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Teachers</p>
+                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.totalTeachers}</p>
+                      </div>
+                      <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                        <GraduationCap className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Classes</p>
-                            <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.totalClasses}</p>
-                          </div>
-                          <div className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
-                            <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Classes</p>
+                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.totalClasses}</p>
+                      </div>
+                      <div className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                        <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Results Published</p>
-                            <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.publishedResults}</p>
-                          </div>
-                          <div className="p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
-                            <BarChart3 className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Results Published</p>
+                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{stats.publishedResults}</p>
+                      </div>
+                      <div className="p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
+                        <BarChart3 className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Revenue</p>
-                            <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{formatCurrency(stats.totalRevenue)}</p>
-                          </div>
-                          <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                            <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Revenue</p>
+                        <p className="text-xl font-bold text-gray-800 dark:text-gray-200">{formatCurrency(stats.totalRevenue)}</p>
+                      </div>
+                      <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                        <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Pending Fees</p>
-                            <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(stats.pendingFees)}</p>
-                          </div>
-                          <div className="p-2 bg-red-50 dark:bg-red-950/20 rounded-lg">
-                            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Pending Fees</p>
+                        <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(stats.pendingFees)}</p>
+                      </div>
+                      <div className="p-2 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                        <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddStudent(true)}>
+                  <CardContent className="p-4 text-center">
+                    <UserPlus className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Student</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddTeacher(true)}>
+                  <CardContent className="p-4 text-center">
+                    <GraduationCap className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Teacher</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddClass(true)}>
+                  <CardContent className="p-4 text-center">
+                    <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Class</p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddSubject(true)}>
+                  <CardContent className="p-4 text-center">
+                    <ClipboardList className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Subject</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Students */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Recent Students</CardTitle>
+                    <Button variant="outline" size="sm" onClick={() => setActiveTab('students')}>
+                      View All
+                      <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
                   </div>
-
-                  {/* Quick Actions */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddStudent(true)}>
-                      <CardContent className="p-4 text-center">
-                        <UserPlus className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Student</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddTeacher(true)}>
-                      <CardContent className="p-4 text-center">
-                        <GraduationCap className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Teacher</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddClass(true)}>
-                      <CardContent className="p-4 text-center">
-                        <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Class</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAddSubject(true)}>
-                      <CardContent className="p-4 text-center">
-                        <ClipboardList className="h-8 w-8 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Add Subject</p>
-                      </CardContent>
-                    </Card>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-800">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Name</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Admission No</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Class</th>
+                          <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {students.slice(0, 5).map((student) => (
+                          <tr key={student.id} className="border-b border-gray-100 dark:border-gray-800/50">
+                            <td className="py-3 px-4 text-sm text-gray-800 dark:text-gray-200">
+                              {student.first_name} {student.last_name}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{student.admission_number}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{student.class?.name}</td>
+                            <td className="py-3 px-4 text-right">
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteStudent(student.id)}>
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
 
-                  {/* Recent Students */}
-                  <Card>
-                    <CardHeader>
+          {/* STUDENTS TAB */}
+          {activeTab === 'students' && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Students ({students.length})</h2>
+                <Button onClick={() => setShowAddStudent(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Student
+                </Button>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    placeholder="Search students..."
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && searchStudents()}
+                  />
+                </div>
+                <select
+                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                >
+                  <option value="all">All Classes</option>
+                  {classes.map((cls) => (
+                    <option key={cls.id} value={cls.id}>{cls.name}</option>
+                  ))}
+                </select>
+                <Button variant="outline" onClick={searchStudents}>
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+              </div>
+
+              <Card>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-800">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Name</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Admission No</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Class</th>
+                          <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {students.map((student) => (
+                          <tr key={student.id} className="border-b border-gray-100">
+                            <td className="py-3 px-4 text-sm text-gray-800">
+                              {student.first_name} {student.last_name}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-600">{student.admission_number}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600">{student.email}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600">{student.class?.name}</td>
+                            <td className="py-3 px-4 text-right">
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteStudent(student.id)}>
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* TEACHERS TAB */}
+          {activeTab === 'teachers' && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Teachers ({teachers.length})</h2>
+                <Button onClick={() => setShowAddTeacher(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Teacher
+                </Button>
+              </div>
+
+              <Card>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200 dark:border-gray-800">
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Name</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Staff ID</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Subject</th>
+                          <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {teachers.map((teacher) => (
+                          <tr key={teacher.id} className="border-b border-gray-100">
+                            <td className="py-3 px-4 text-sm text-gray-800">
+                              {teacher.first_name} {teacher.last_name}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-gray-600">{teacher.staff_id}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600">{teacher.email}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600">{teacher.subject?.name || 'Not assigned'}</td>
+                            <td className="py-3 px-4 text-right">
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteTeacher(teacher.id)}>
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* CLASSES TAB */}
+          {activeTab === 'classes' && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Classes ({classes.length})</h2>
+                <Button onClick={() => setShowAddClass(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Class
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {classes.map((cls) => (
+                  <Card key={cls.id}>
+                    <CardContent className="p-6">
                       <div className="flex items-center justify-between">
-                        <CardTitle>Recent Students</CardTitle>
-                        <Button variant="outline" size="sm" onClick={() => setActiveTab('students')}>
-                          View All
-                          <ChevronRight className="ml-1 h-4 w-4" />
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{cls.name}</h3>
+                          <p className="text-sm text-gray-500">Capacity: {cls.capacity || 'Not set'}</p>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteClass(cls.id)}>
+                          <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-gray-200 dark:border-gray-800">
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Name</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Admission No</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Class</th>
-                              <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {students.slice(0, 5).map((student) => (
-                              <tr key={student.id} className="border-b border-gray-100 dark:border-gray-800/50">
-                                <td className="py-3 px-4 text-sm text-gray-800 dark:text-gray-200">
-                                  {student.first_name} {student.last_name}
-                                </td>
-                                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{student.admission_number}</td>
-                                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{student.class?.name}</td>
-                                <td className="py-3 px-4 text-right">
-                                  <Button variant="ghost" size="sm" onClick={() => {
-                                    setEditingStudent(student)
-                                    setShowEditStudent(true)
-                                  }}>
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteStudent(student.id)}>
-                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* SUBJECTS TAB */}
+          {activeTab === 'subjects' && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Subjects ({subjects.length})</h2>
+                <Button onClick={() => setShowAddSubject(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Subject
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {subjects.map((subject) => (
+                  <Card key={subject.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{subject.name}</h3>
+                          <p className="text-sm text-gray-500">Class: {subject.class?.name || 'Not assigned'}</p>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteSubject(subject.id)}>
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
-                </>
-              )}
-
-              {/* STUDENTS TAB */}
-              {activeTab === 'students' && (
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Students ({students.length})</h2>
-                    <Button onClick={() => setShowAddStudent(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Student
-                    </Button>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1 relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <Input
-                        placeholder="Search students..."
-                        className="pl-10"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && searchStudents()}
-                      />
-                    </div>
-                    <select
-                      className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900"
-                      value={selectedClass}
-                      onChange={(e) => setSelectedClass(e.target.value)}
-                    >
-                      <option value="all">All Classes</option>
-                      {classes.map((cls) => (
-                        <option key={cls.id} value={cls.id}>{cls.name}</option>
-                      ))}
-                    </select>
-                    <Button variant="outline" onClick={searchStudents}>
-                      <Search className="h-4 w-4 mr-2" />
-                      Search
-                    </Button>
-                  </div>
-
-                  <Card>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-gray-200 dark:border-gray-800">
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Name</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Admission No</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Class</th>
-                              <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {students.map((student) => (
-                              <tr key={student.id} className="border-b border-gray-100">
-                                <td className="py-3 px-4 text-sm text-gray-800">
-                                  {student.first_name} {student.last_name}
-                                </td>
-                                <td className="py-3 px-4 text-sm text-gray-600">{student.admission_number}</td>
-                                <td className="py-3 px-4 text-sm text-gray-600">{student.email}</td>
-                                <td className="py-3 px-4 text-sm text-gray-600">{student.class?.name}</td>
-                                <td className="py-3 px-4 text-right">
-                                  <Button variant="ghost" size="sm" onClick={() => {
-                                    setEditingStudent(student)
-                                    setShowEditStudent(true)
-                                  }}>
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteStudent(student.id)}>
-                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* TEACHERS TAB */}
-              {activeTab === 'teachers' && (
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Teachers ({teachers.length})</h2>
-                    <Button onClick={() => setShowAddTeacher(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Teacher
-                    </Button>
-                  </div>
-
-                  <Card>
-                    <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="border-b border-gray-200 dark:border-gray-800">
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Name</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Staff ID</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Email</th>
-                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Subject</th>
-                              <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {teachers.map((teacher) => (
-                              <tr key={teacher.id} className="border-b border-gray-100">
-                                <td className="py-3 px-4 text-sm text-gray-800">
-                                  {teacher.first_name} {teacher.last_name}
-                                </td>
-                                <td className="py-3 px-4 text-sm text-gray-600">{teacher.staff_id}</td>
-                                <td className="py-3 px-4 text-sm text-gray-600">{teacher.email}</td>
-                                <td className="py-3 px-4 text-sm text-gray-600">{teacher.subject?.name || 'Not assigned'}</td>
-                                <td className="py-3 px-4 text-right">
-                                  <Button variant="ghost" size="sm" onClick={() => handleDeleteTeacher(teacher.id)}>
-                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* CLASSES TAB */}
-              {activeTab === 'classes' && (
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Classes ({classes.length})</h2>
-                    <Button onClick={() => setShowAddClass(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Class
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {classes.map((cls) => (
-                      <Card key={cls.id}>
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{cls.name}</h3>
-                              <p className="text-sm text-gray-500">Capacity: {cls.capacity || 'Not set'}</p>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={() => handleDeleteClass(cls.id)}>
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* SUBJECTS TAB */}
-              {activeTab === 'subjects' && (
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">All Subjects ({subjects.length})</h2>
-                    <Button onClick={() => setShowAddSubject(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Subject
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {subjects.map((subject) => (
-                      <Card key={subject.id}>
-                        <CardContent className="p-6">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{subject.name}</h3>
-                              <p className="text-sm text-gray-500">Class: {subject.class?.name || 'Not assigned'}</p>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={() => handleDeleteSubject(subject.id)}>
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
+                ))}
+              </div>
+            </div>
           )}
         </main>
       </div>
@@ -1150,63 +1106,6 @@ export default function AdminDashboard() {
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddStudent(false)}>Cancel</Button>
               <Button onClick={handleAddStudent} disabled={loading}>{loading ? 'Adding...' : 'Add Student'}</Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Student Modal */}
-      {showEditStudent && editingStudent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Edit Student</h2>
-              <button onClick={() => { setShowEditStudent(false); setEditingStudent(null); }} className="p-2 hover:bg-gray-100 rounded-lg">
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
-                <Input value={editingStudent.first_name} onChange={(e) => setEditingStudent({...editingStudent, first_name: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
-                <Input value={editingStudent.last_name} onChange={(e) => setEditingStudent({...editingStudent, last_name: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
-                <Input type="email" value={editingStudent.email} onChange={(e) => setEditingStudent({...editingStudent, email: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Admission Number *</label>
-                <Input value={editingStudent.admission_number} onChange={(e) => setEditingStudent({...editingStudent, admission_number: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Class</label>
-                <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={editingStudent.class_id || ''} onChange={(e) => setEditingStudent({...editingStudent, class_id: e.target.value})}>
-                  <option value="">Select Class</option>
-                  {classes.map((cls) => (
-                    <option key={cls.id} value={cls.id}>{cls.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
-                <Input type="date" value={editingStudent.date_of_birth || ''} onChange={(e) => setEditingStudent({...editingStudent, date_of_birth: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Phone</label>
-                <Input value={editingStudent.parent_phone || ''} onChange={(e) => setEditingStudent({...editingStudent, parent_phone: e.target.value})} />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Email</label>
-                <Input type="email" value={editingStudent.parent_email || ''} onChange={(e) => setEditingStudent({...editingStudent, parent_email: e.target.value})} />
-              </div>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-              <Button variant="outline" onClick={() => { setShowEditStudent(false); setEditingStudent(null); }}>Cancel</Button>
-              <Button onClick={handleEditStudent} disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
             </div>
           </div>
         </div>
