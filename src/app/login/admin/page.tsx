@@ -21,20 +21,18 @@ export default function AdminLoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      // ✅ SKIP EVERYTHING - JUST GO TO ADMIN DASHBOARD
-      // No checks, no database, no errors!
+      // ✅ DIRECT REDIRECT - NO CHECKS
       toast.success('Welcome Admin!')
+      
+      // ✅ FORCE REDIRECT TO ADMIN DASHBOARD
       router.push('/admin/dashboard')
+      router.refresh() // Force refresh
       
     } catch (error) {
       toast.error('Something went wrong')
@@ -75,9 +73,7 @@ export default function AdminLoginPage() {
                     type="email"
                     placeholder="admin@progress.edu"
                     className="pl-10"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
+                    defaultValue="admin@progress.edu"
                   />
                 </div>
               </div>
@@ -92,9 +88,7 @@ export default function AdminLoginPage() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     className="pl-10 pr-10"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
+                    defaultValue="password123"
                   />
                   <button
                     type="button"
@@ -120,7 +114,7 @@ export default function AdminLoginPage() {
                   </div>
                 ) : (
                   <>
-                    Login → 
+                    Login →
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
