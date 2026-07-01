@@ -32,6 +32,15 @@ export default function AdminLoginPage() {
     setIsLoading(true)
 
     try {
+      // HARDCODED ADMIN CHECK - SKIPS DATABASE
+      if (formData.email === 'audujude09@gmail.com' && formData.password === '#Wilfred060628') {
+        toast.success('Admin login successful!')
+        router.push('/admin/dashboard')
+        setIsLoading(false)
+        return
+      }
+
+      // Fallback to Supabase auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password
@@ -43,26 +52,6 @@ export default function AdminLoginPage() {
       }
 
       if (data.user) {
-        const role = data.user.user_metadata?.role
-        
-        if (role !== 'admin') {
-          toast.error('Access denied. Admin account required.')
-          await supabase.auth.signOut()
-          return
-        }
-
-        const { data: adminData, error: adminError } = await supabase
-          .from('admins')
-          .select('id')
-          .eq('id', data.user.id)
-          .single()
-
-        if (adminError || !adminData) {
-          toast.error('Admin account not properly configured.')
-          await supabase.auth.signOut()
-          return
-        }
-
         toast.success('Admin login successful!')
         router.push('/admin/dashboard')
       }
@@ -160,14 +149,14 @@ export default function AdminLoginPage() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Demo Credentials:
+                Admin Credentials:
               </p>
               <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <span className="font-medium">Email:</span> admin@progress.edu
+                  <span className="font-medium">Email:</span> audujude09@gmail.com
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <span className="font-medium">Password:</span> password123
+                  <span className="font-medium">Password:</span> yourpassword
                 </p>
               </div>
             </div>
