@@ -172,12 +172,6 @@ export default function StaffLoginPage() {
             </div>
 
             <div className="mt-6 text-center space-y-2">
-              <Link href="/login" className="text-sm text-blue-600 dark:text-blue-400 hover:underline block">
-                Student Login
-              </Link>
-              <Link href="/login/admin" className="text-sm text-purple-600 dark:text-purple-400 hover:underline block">
-                Admin Login
-              </Link>
               <Link href="/" className="text-sm text-gray-500 dark:text-gray-400 hover:underline block">
                 ← Back to Home
               </Link>
