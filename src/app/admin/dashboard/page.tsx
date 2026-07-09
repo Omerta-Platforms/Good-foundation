@@ -30,14 +30,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { supabase } from '@/lib/supabase/client'
-import { createClient } from '@supabase/supabase-js'
 import toast from 'react-hot-toast'
-
-// Admin client for creating users
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -49,20 +42,17 @@ export default function AdminDashboard() {
   const [classes, setClasses] = useState<any[]>([])
   const [subjects, setSubjects] = useState<any[]>([])
   
-  // Stats
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalTeachers: 0,
     totalClasses: 0
   })
 
-  // Modal states
   const [showAddStudent, setShowAddStudent] = useState(false)
   const [showAddTeacher, setShowAddTeacher] = useState(false)
   const [showAddClass, setShowAddClass] = useState(false)
   const [showAddSubject, setShowAddSubject] = useState(false)
 
-  // New student form
   const [newStudent, setNewStudent] = useState({
     email: '',
     password: '',
@@ -72,7 +62,6 @@ export default function AdminDashboard() {
     class_id: ''
   })
 
-  // New teacher form
   const [newTeacher, setNewTeacher] = useState({
     email: '',
     password: '',
@@ -81,19 +70,16 @@ export default function AdminDashboard() {
     last_name: ''
   })
 
-  // New class form
   const [newClass, setNewClass] = useState({
     name: '',
     capacity: ''
   })
 
-  // New subject form
   const [newSubject, setNewSubject] = useState({
     name: '',
     class_id: ''
   })
 
-  // Fetch data
   useEffect(() => {
     fetchData()
   }, [])
@@ -101,28 +87,23 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      // Get students
       const { data: studentData } = await supabase
         .from('students')
         .select('*, class:classes(name)')
         .limit(20)
       
-      // Get teachers
       const { data: teacherData } = await supabase
         .from('teachers')
         .select('*')
       
-      // Get classes
       const { data: classData } = await supabase
         .from('classes')
         .select('*')
       
-      // Get subjects
       const { data: subjectData } = await supabase
         .from('subjects')
         .select('*, class:classes(name)')
       
-      // Get counts
       const { count: studentCount } = await supabase
         .from('students')
         .select('*', { count: 'exact', head: true })
@@ -148,12 +129,13 @@ export default function AdminDashboard() {
 
     } catch (error) {
       console.error('Error:', error)
+      toast.error('Failed to load data')
     } finally {
       setLoading(false)
     }
   }
 
-  // ADD STUDENT
+  // ADD STUDENT - Works without Service Role Key
   const handleAddStudent = async () => {
     if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
       toast.error('Please fill in all required fields')
@@ -162,34 +144,37 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      // Create auth user
-      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      // This creates the user in auth.users
+      const { data: authUser, error: authError } = await supabase.auth.signUp({
         email: newStudent.email,
         password: newStudent.password,
-        email_confirm: true,
-        user_metadata: { 
-          role: 'student',
-          first_name: newStudent.first_name,
-          last_name: newStudent.last_name
+        options: {
+          data: { 
+            role: 'student',
+            first_name: newStudent.first_name,
+            last_name: newStudent.last_name
+          }
         }
       })
 
       if (authError) throw authError
 
-      // Create student record
-      const { error: studentError } = await supabase
-        .from('students')
-        .insert({
-          id: authUser.user.id,
-          email: newStudent.email,
-          password: newStudent.password,
-          first_name: newStudent.first_name,
-          last_name: newStudent.last_name,
-          admission_number: newStudent.admission_number,
-          class_id: newStudent.class_id || null
-        })
+      if (authUser.user) {
+        // This creates the student record in your students table
+        const { error: studentError } = await supabase
+          .from('students')
+          .insert({
+            id: authUser.user.id,
+            email: newStudent.email,
+            password: newStudent.password,
+            first_name: newStudent.first_name,
+            last_name: newStudent.last_name,
+            admission_number: newStudent.admission_number,
+            class_id: newStudent.class_id || null
+          })
 
-      if (studentError) throw studentError
+        if (studentError) throw studentError
+      }
 
       toast.success('Student added successfully!')
       setShowAddStudent(false)
@@ -198,6 +183,52 @@ export default function AdminDashboard() {
 
     } catch (error: any) {
       toast.error(error.message || 'Failed to add student')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ADD TEACHER - Works without Service Role Key
+  const handleAddTeacher = async () => {
+    if (!newTeacher.email || !newTeacher.password || !newTeacher.first_name || !newTeacher.last_name || !newTeacher.staff_id) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { data: authUser, error: authError } = await supabase.auth.signUp({
+        email: newTeacher.email,
+        password: newTeacher.password,
+        options: {
+          data: { 
+            role: 'teacher',
+            first_name: newTeacher.first_name,
+            last_name: newTeacher.last_name
+          }
+        }
+      })
+
+      if (authError) throw authError
+
+      if (authUser.user) {
+        await supabase.from('teachers').insert({
+          id: authUser.user.id,
+          email: newTeacher.email,
+          staff_id: newTeacher.staff_id,
+          password: newTeacher.password,
+          first_name: newTeacher.first_name,
+          last_name: newTeacher.last_name
+        })
+      }
+
+      toast.success('Teacher added successfully!')
+      setShowAddTeacher(false)
+      setNewTeacher({ email: '', password: '', staff_id: '', first_name: '', last_name: '' })
+      fetchData()
+
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add teacher')
     } finally {
       setLoading(false)
     }
@@ -213,49 +244,6 @@ export default function AdminDashboard() {
       fetchData()
     } catch (error) {
       toast.error('Failed to delete')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // ADD TEACHER
-  const handleAddTeacher = async () => {
-    if (!newTeacher.email || !newTeacher.password || !newTeacher.first_name || !newTeacher.last_name || !newTeacher.staff_id) {
-      toast.error('Please fill in all required fields')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email: newTeacher.email,
-        password: newTeacher.password,
-        email_confirm: true,
-        user_metadata: { 
-          role: 'teacher',
-          first_name: newTeacher.first_name,
-          last_name: newTeacher.last_name
-        }
-      })
-
-      if (authError) throw authError
-
-      await supabase.from('teachers').insert({
-        id: authUser.user.id,
-        email: newTeacher.email,
-        staff_id: newTeacher.staff_id,
-        password: newTeacher.password,
-        first_name: newTeacher.first_name,
-        last_name: newTeacher.last_name
-      })
-
-      toast.success('Teacher added successfully!')
-      setShowAddTeacher(false)
-      setNewTeacher({ email: '', password: '', staff_id: '', first_name: '', last_name: '' })
-      fetchData()
-
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to add teacher')
     } finally {
       setLoading(false)
     }
@@ -442,14 +430,11 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Main Content */}
       <div className="flex-1 lg:ml-72">
-        {/* Header */}
         <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40">
           <div className="flex items-center justify-between px-4 py-4">
             <div className="flex items-center space-x-4">
@@ -475,7 +460,6 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* Content */}
         <main className="p-6">
           {loading ? (
             <div className="flex items-center justify-center h-64">
@@ -483,7 +467,6 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <>
-              {/* DASHBOARD */}
               {activeTab === 'dashboard' && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -522,7 +505,6 @@ export default function AdminDashboard() {
                     </Card>
                   </div>
 
-                  {/* Quick Actions */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddStudent(true)}>
                       <CardContent className="p-4 text-center">
@@ -552,7 +534,6 @@ export default function AdminDashboard() {
                 </>
               )}
 
-              {/* STUDENTS */}
               {activeTab === 'students' && (
                 <div>
                   <div className="flex justify-between items-center mb-4">
@@ -594,7 +575,6 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* TEACHERS */}
               {activeTab === 'teachers' && (
                 <div>
                   <div className="flex justify-between items-center mb-4">
@@ -636,7 +616,6 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* CLASSES */}
               {activeTab === 'classes' && (
                 <div>
                   <div className="flex justify-between items-center mb-4">
@@ -665,7 +644,6 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* SUBJECTS */}
               {activeTab === 'subjects' && (
                 <div>
                   <div className="flex justify-between items-center mb-4">
@@ -698,7 +676,7 @@ export default function AdminDashboard() {
         </main>
       </div>
 
-      {/* ADD STUDENT MODAL */}
+      {/* MODALS */}
       {showAddStudent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -725,7 +703,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ADD TEACHER MODAL */}
       {showAddTeacher && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -748,7 +725,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ADD CLASS MODAL */}
       {showAddClass && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
@@ -768,7 +744,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ADD SUBJECT MODAL */}
       {showAddSubject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
