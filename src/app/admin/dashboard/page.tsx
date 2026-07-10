@@ -33,11 +33,13 @@ import { supabase } from '@/lib/supabase/client'
 import { createClient } from '@supabase/supabase-js'
 import toast from 'react-hot-toast'
 
-// Create admin client with service role key for creating users
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Create admin client with service role key if available
+const supabaseAdmin = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -151,7 +153,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // ADD STUDENT - Uses Service Role Key (creates auth user + student record)
+  // ADD STUDENT - Uses Service Role if available
   const handleAddStudent = async () => {
     if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
       toast.error('Please fill in all required fields')
@@ -160,7 +162,14 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      // Step 1: Create auth user using service role (auto-confirms email)
+      // Check if service role is available
+      if (!supabaseAdmin) {
+        toast.error('Service role key not configured. Please add SUPABASE_SERVICE_ROLE_KEY to environment variables.')
+        setLoading(false)
+        return
+      }
+
+      // Create auth user using service role
       const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: newStudent.email,
         password: newStudent.password,
@@ -180,7 +189,6 @@ export default function AdminDashboard() {
       }
 
       if (authUser.user) {
-        // Step 2: Create student record with the same ID
         const { error: studentError } = await supabase
           .from('students')
           .insert({
@@ -217,7 +225,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // ADD TEACHER - Uses Service Role Key (creates auth user + teacher record)
+  // ADD TEACHER - Uses Service Role if available
   const handleAddTeacher = async () => {
     if (!newTeacher.email || !newTeacher.password || !newTeacher.first_name || !newTeacher.last_name || !newTeacher.staff_id) {
       toast.error('Please fill in all required fields')
@@ -226,7 +234,14 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      // Step 1: Create auth user using service role (auto-confirms email)
+      // Check if service role is available
+      if (!supabaseAdmin) {
+        toast.error('Service role key not configured. Please add SUPABASE_SERVICE_ROLE_KEY to environment variables.')
+        setLoading(false)
+        return
+      }
+
+      // Create auth user using service role
       const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: newTeacher.email,
         password: newTeacher.password,
@@ -246,7 +261,6 @@ export default function AdminDashboard() {
       }
 
       if (authUser.user) {
-        // Step 2: Create teacher record with the same ID
         const { error: teacherError } = await supabase
           .from('teachers')
           .insert({
@@ -569,7 +583,7 @@ export default function AdminDashboard() {
                     </Card>
                     <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddClass(true)}>
                       <CardContent className="p-4 text-center">
-                      <BookOpen className="h-8 w-8 text-primary-600 mx-auto mb-2" />
+                        <BookOpen className="h-8 w-8 text-primary-600 mx-auto mb-2" />
                         <p className="text-sm font-medium">Add Class</p>
                       </CardContent>
                     </Card>
