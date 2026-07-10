@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { 
-  User, 
+  Mail, 
   Lock, 
   Eye, 
   EyeOff,
@@ -23,7 +23,7 @@ export default function StaffLoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    staffId: '',
+    email: '',
     password: ''
   })
 
@@ -32,41 +32,48 @@ export default function StaffLoginPage() {
     setIsLoading(true)
 
     try {
-      const { data: teacher, error: teacherError } = await supabase
-        .from('teachers')
-        .select('email')
-        .eq('staff_id', formData.staffId)
-        .single()
-
-      if (teacherError || !teacher) {
-        toast.error('Staff ID not found')
-        setIsLoading(false)
-        return
-      }
-
+      // Login with Supabase Auth using email and password
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: teacher.email,
+        email: formData.email,
         password: formData.password
       })
 
       if (error) {
-        toast.error('Invalid credentials')
+        toast.error('Invalid email or password')
+        setIsLoading(false)
         return
       }
 
       if (data.user) {
+        // Check if user has teacher role
         const role = data.user.user_metadata?.role
         if (role !== 'teacher') {
           toast.error('Access denied. Staff account required.')
           await supabase.auth.signOut()
+          setIsLoading(false)
           return
         }
 
-        toast.success('Staff login successful!')
+        // Check if teacher exists in teachers table
+        const { data: teacher, error: teacherError } = await supabase
+          .from('teachers')
+          .select('id')
+          .eq('id', data.user.id)
+          .single()
+
+        if (teacherError || !teacher) {
+          toast.error('Staff account not properly configured.')
+          await supabase.auth.signOut()
+          setIsLoading(false)
+          return
+        }
+
+        toast.success('Login successful')
         router.push('/teacher/dashboard')
       }
 
     } catch (error) {
+      console.error('Login error:', error)
       toast.error('An error occurred. Please try again.')
     } finally {
       setIsLoading(false)
@@ -90,23 +97,23 @@ export default function StaffLoginPage() {
                 Staff Login
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Enter your Staff ID and password
+                Enter your email and password
               </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Staff ID *
+                  Email Address
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                   <Input
-                    type="text"
-                    placeholder="STAFF001"
+                    type="email"
+                    placeholder="teacher@progress.edu"
                     className="pl-10"
-                    value={formData.staffId}
-                    onChange={(e) => setFormData({ ...formData, staffId: e.target.value })}
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
                   />
                 </div>
@@ -114,7 +121,7 @@ export default function StaffLoginPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Password *
+                  Password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
@@ -163,7 +170,7 @@ export default function StaffLoginPage() {
               </p>
               <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <span className="font-medium">Staff ID:</span> STAFF001
+                  <span className="font-medium">Email:</span> teacher@progress.edu
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   <span className="font-medium">Password:</span> password123
@@ -173,7 +180,7 @@ export default function StaffLoginPage() {
 
             <div className="mt-6 text-center space-y-2">
               <Link href="/" className="text-sm text-gray-500 dark:text-gray-400 hover:underline block">
-                ← Back to Home
+                Back to Home
               </Link>
             </div>
           </CardContent>
