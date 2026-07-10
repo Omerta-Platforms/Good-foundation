@@ -30,7 +30,14 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@supabase/supabase-js'
 import toast from 'react-hot-toast'
+
+// Create admin client with service role key for creating users
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -52,6 +59,8 @@ export default function AdminDashboard() {
   const [showAddTeacher, setShowAddTeacher] = useState(false)
   const [showAddClass, setShowAddClass] = useState(false)
   const [showAddSubject, setShowAddSubject] = useState(false)
+  const [showEditStudent, setShowEditStudent] = useState(false)
+  const [editingStudent, setEditingStudent] = useState<any>(null)
 
   const [newStudent, setNewStudent] = useState({
     email: '',
@@ -59,7 +68,10 @@ export default function AdminDashboard() {
     first_name: '',
     last_name: '',
     admission_number: '',
-    class_id: ''
+    class_id: '',
+    date_of_birth: '',
+    parent_phone: '',
+    parent_email: ''
   })
 
   const [newTeacher, setNewTeacher] = useState({
@@ -67,17 +79,21 @@ export default function AdminDashboard() {
     password: '',
     staff_id: '',
     first_name: '',
-    last_name: ''
+    last_name: '',
+    phone: '',
+    subject_id: ''
   })
 
   const [newClass, setNewClass] = useState({
     name: '',
+    teacher_id: '',
     capacity: ''
   })
 
   const [newSubject, setNewSubject] = useState({
     name: '',
-    class_id: ''
+    class_id: '',
+    teacher_id: ''
   })
 
   useEffect(() => {
@@ -135,7 +151,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // ADD STUDENT - Creates both auth user and student record
+  // ADD STUDENT - Uses Service Role Key (creates auth user + student record)
   const handleAddStudent = async () => {
     if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
       toast.error('Please fill in all required fields')
@@ -144,22 +160,21 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      // Step 1: Create auth user
-      const { data: authUser, error: authError } = await supabase.auth.signUp({
+      // Step 1: Create auth user using service role (auto-confirms email)
+      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: newStudent.email,
         password: newStudent.password,
-        options: {
-          data: { 
-            role: 'student',
-            first_name: newStudent.first_name,
-            last_name: newStudent.last_name
-          }
+        email_confirm: true,
+        user_metadata: { 
+          role: 'student',
+          first_name: newStudent.first_name,
+          last_name: newStudent.last_name
         }
       })
 
       if (authError) {
         console.error('Auth error:', authError)
-        toast.error(authError.message)
+        toast.error('Auth error: ' + authError.message)
         setLoading(false)
         return
       }
@@ -175,7 +190,10 @@ export default function AdminDashboard() {
             first_name: newStudent.first_name,
             last_name: newStudent.last_name,
             admission_number: newStudent.admission_number,
-            class_id: newStudent.class_id || null
+            class_id: newStudent.class_id || null,
+            date_of_birth: newStudent.date_of_birth || null,
+            parent_phone: newStudent.parent_phone || null,
+            parent_email: newStudent.parent_email || null
           })
 
         if (studentError) {
@@ -188,7 +206,7 @@ export default function AdminDashboard() {
 
       toast.success('Student added successfully')
       setShowAddStudent(false)
-      setNewStudent({ email: '', password: '', first_name: '', last_name: '', admission_number: '', class_id: '' })
+      setNewStudent({ email: '', password: '', first_name: '', last_name: '', admission_number: '', class_id: '', date_of_birth: '', parent_phone: '', parent_email: '' })
       fetchData()
 
     } catch (error: any) {
@@ -199,7 +217,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // ADD TEACHER - Creates both auth user and teacher record
+  // ADD TEACHER - Uses Service Role Key (creates auth user + teacher record)
   const handleAddTeacher = async () => {
     if (!newTeacher.email || !newTeacher.password || !newTeacher.first_name || !newTeacher.last_name || !newTeacher.staff_id) {
       toast.error('Please fill in all required fields')
@@ -208,22 +226,21 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      // Step 1: Create auth user
-      const { data: authUser, error: authError } = await supabase.auth.signUp({
+      // Step 1: Create auth user using service role (auto-confirms email)
+      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: newTeacher.email,
         password: newTeacher.password,
-        options: {
-          data: { 
-            role: 'teacher',
-            first_name: newTeacher.first_name,
-            last_name: newTeacher.last_name
-          }
+        email_confirm: true,
+        user_metadata: { 
+          role: 'teacher',
+          first_name: newTeacher.first_name,
+          last_name: newTeacher.last_name
         }
       })
 
       if (authError) {
         console.error('Auth error:', authError)
-        toast.error(authError.message)
+        toast.error('Auth error: ' + authError.message)
         setLoading(false)
         return
       }
@@ -238,7 +255,9 @@ export default function AdminDashboard() {
             staff_id: newTeacher.staff_id,
             password: newTeacher.password,
             first_name: newTeacher.first_name,
-            last_name: newTeacher.last_name
+            last_name: newTeacher.last_name,
+            phone: newTeacher.phone || null,
+            subject_id: newTeacher.subject_id || null
           })
 
         if (teacherError) {
@@ -251,7 +270,7 @@ export default function AdminDashboard() {
 
       toast.success('Teacher added successfully')
       setShowAddTeacher(false)
-      setNewTeacher({ email: '', password: '', staff_id: '', first_name: '', last_name: '' })
+      setNewTeacher({ email: '', password: '', staff_id: '', first_name: '', last_name: '', phone: '', subject_id: '' })
       fetchData()
 
     } catch (error: any) {
@@ -303,12 +322,13 @@ export default function AdminDashboard() {
     try {
       await supabase.from('classes').insert({
         name: newClass.name,
+        teacher_id: newClass.teacher_id || null,
         capacity: parseInt(newClass.capacity) || 0
       })
 
       toast.success('Class added successfully')
       setShowAddClass(false)
-      setNewClass({ name: '', capacity: '' })
+      setNewClass({ name: '', teacher_id: '', capacity: '' })
       fetchData()
 
     } catch (error: any) {
@@ -344,12 +364,13 @@ export default function AdminDashboard() {
     try {
       await supabase.from('subjects').insert({
         name: newSubject.name,
-        class_id: newSubject.class_id
+        class_id: newSubject.class_id,
+        teacher_id: newSubject.teacher_id || null
       })
 
       toast.success('Subject added successfully')
       setShowAddSubject(false)
-      setNewSubject({ name: '', class_id: '' })
+      setNewSubject({ name: '', class_id: '', teacher_id: '' })
       fetchData()
 
     } catch (error: any) {
@@ -548,7 +569,7 @@ export default function AdminDashboard() {
                     </Card>
                     <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddClass(true)}>
                       <CardContent className="p-4 text-center">
-                        <BookOpen className="h-8 w-8 text-primary-600 mx-auto mb-2" />
+                      <BookOpen className="h-8 w-8 text-primary-600 mx-auto mb-2" />
                         <p className="text-sm font-medium">Add Class</p>
                       </CardContent>
                     </Card>
@@ -572,7 +593,7 @@ export default function AdminDashboard() {
                   </div>
                   <Card>
                     <CardContent>
-                     <div className="overflow-x-auto">
+                      <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
                             <tr className="border-b">
@@ -722,6 +743,11 @@ export default function AdminDashboard() {
                 <option value="">Select Class</option>
                 {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+              <Input placeholder="Date of Birth" type="date" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({...newStudent, date_of_birth: e.target.value})} />
+              <Input placeholder="Parent Phone" value={newStudent.parent_phone} onChange={(e) => setNewStudent({...newStudent, parent_phone: e.target.value})} />
+              <div className="col-span-2">
+                <Input placeholder="Parent Email" type="email" value={newStudent.parent_email} onChange={(e) => setNewStudent({...newStudent, parent_email: e.target.value})} />
+              </div>
             </div>
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddStudent(false)}>Cancel</Button>
@@ -745,6 +771,13 @@ export default function AdminDashboard() {
               <Input placeholder="Email *" type="email" value={newTeacher.email} onChange={(e) => setNewTeacher({...newTeacher, email: e.target.value})} />
               <Input placeholder="Password *" type="password" value={newTeacher.password} onChange={(e) => setNewTeacher({...newTeacher, password: e.target.value})} />
               <Input placeholder="Staff ID *" value={newTeacher.staff_id} onChange={(e) => setNewTeacher({...newTeacher, staff_id: e.target.value})} />
+              <Input placeholder="Phone" value={newTeacher.phone} onChange={(e) => setNewTeacher({...newTeacher, phone: e.target.value})} />
+              <div className="col-span-2">
+                <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newTeacher.subject_id} onChange={(e) => setNewTeacher({...newTeacher, subject_id: e.target.value})}>
+                  <option value="">Select Subject</option>
+                  {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
             </div>
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddTeacher(false)}>Cancel</Button>
@@ -764,6 +797,10 @@ export default function AdminDashboard() {
             </div>
             <div className="space-y-4">
               <Input placeholder="Class Name *" value={newClass.name} onChange={(e) => setNewClass({...newClass, name: e.target.value})} />
+              <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newClass.teacher_id} onChange={(e) => setNewClass({...newClass, teacher_id: e.target.value})}>
+                <option value="">Select Class Teacher</option>
+                {teachers.map((t) => <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>)}
+              </select>
               <Input placeholder="Capacity" type="number" value={newClass.capacity} onChange={(e) => setNewClass({...newClass, capacity: e.target.value})} />
             </div>
             <div className="flex justify-end space-x-3 mt-6">
@@ -787,6 +824,10 @@ export default function AdminDashboard() {
               <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newSubject.class_id} onChange={(e) => setNewSubject({...newSubject, class_id: e.target.value})}>
                 <option value="">Select Class *</option>
                 {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <select className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newSubject.teacher_id} onChange={(e) => setNewSubject({...newSubject, teacher_id: e.target.value})}>
+                <option value="">Select Teacher</option>
+                {teachers.map((t) => <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>)}
               </select>
             </div>
             <div className="flex justify-end space-x-3 mt-6">
