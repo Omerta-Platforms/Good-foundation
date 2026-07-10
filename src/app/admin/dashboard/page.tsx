@@ -128,14 +128,14 @@ export default function AdminDashboard() {
       })
 
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error fetching data:', error)
       toast.error('Failed to load data')
     } finally {
       setLoading(false)
     }
   }
 
-  // ADD STUDENT - Works without Service Role Key
+  // ADD STUDENT - Creates both auth user and student record
   const handleAddStudent = async () => {
     if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
       toast.error('Please fill in all required fields')
@@ -144,7 +144,7 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      // This creates the user in auth.users
+      // Step 1: Create auth user
       const { data: authUser, error: authError } = await supabase.auth.signUp({
         email: newStudent.email,
         password: newStudent.password,
@@ -157,10 +157,15 @@ export default function AdminDashboard() {
         }
       })
 
-      if (authError) throw authError
+      if (authError) {
+        console.error('Auth error:', authError)
+        toast.error(authError.message)
+        setLoading(false)
+        return
+      }
 
       if (authUser.user) {
-        // This creates the student record in your students table
+        // Step 2: Create student record with the same ID
         const { error: studentError } = await supabase
           .from('students')
           .insert({
@@ -173,22 +178,28 @@ export default function AdminDashboard() {
             class_id: newStudent.class_id || null
           })
 
-        if (studentError) throw studentError
+        if (studentError) {
+          console.error('Student insert error:', studentError)
+          toast.error('Failed to create student record')
+          setLoading(false)
+          return
+        }
       }
 
-      toast.success('Student added successfully!')
+      toast.success('Student added successfully')
       setShowAddStudent(false)
       setNewStudent({ email: '', password: '', first_name: '', last_name: '', admission_number: '', class_id: '' })
       fetchData()
 
     } catch (error: any) {
+      console.error('Error adding student:', error)
       toast.error(error.message || 'Failed to add student')
     } finally {
       setLoading(false)
     }
   }
 
-  // ADD TEACHER - Works without Service Role Key
+  // ADD TEACHER - Creates both auth user and teacher record
   const handleAddTeacher = async () => {
     if (!newTeacher.email || !newTeacher.password || !newTeacher.first_name || !newTeacher.last_name || !newTeacher.staff_id) {
       toast.error('Please fill in all required fields')
@@ -197,6 +208,7 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
+      // Step 1: Create auth user
       const { data: authUser, error: authError } = await supabase.auth.signUp({
         email: newTeacher.email,
         password: newTeacher.password,
@@ -209,25 +221,41 @@ export default function AdminDashboard() {
         }
       })
 
-      if (authError) throw authError
-
-      if (authUser.user) {
-        await supabase.from('teachers').insert({
-          id: authUser.user.id,
-          email: newTeacher.email,
-          staff_id: newTeacher.staff_id,
-          password: newTeacher.password,
-          first_name: newTeacher.first_name,
-          last_name: newTeacher.last_name
-        })
+      if (authError) {
+        console.error('Auth error:', authError)
+        toast.error(authError.message)
+        setLoading(false)
+        return
       }
 
-      toast.success('Teacher added successfully!')
+      if (authUser.user) {
+        // Step 2: Create teacher record with the same ID
+        const { error: teacherError } = await supabase
+          .from('teachers')
+          .insert({
+            id: authUser.user.id,
+            email: newTeacher.email,
+            staff_id: newTeacher.staff_id,
+            password: newTeacher.password,
+            first_name: newTeacher.first_name,
+            last_name: newTeacher.last_name
+          })
+
+        if (teacherError) {
+          console.error('Teacher insert error:', teacherError)
+          toast.error('Failed to create teacher record')
+          setLoading(false)
+          return
+        }
+      }
+
+      toast.success('Teacher added successfully')
       setShowAddTeacher(false)
       setNewTeacher({ email: '', password: '', staff_id: '', first_name: '', last_name: '' })
       fetchData()
 
     } catch (error: any) {
+      console.error('Error adding teacher:', error)
       toast.error(error.message || 'Failed to add teacher')
     } finally {
       setLoading(false)
@@ -278,7 +306,7 @@ export default function AdminDashboard() {
         capacity: parseInt(newClass.capacity) || 0
       })
 
-      toast.success('Class added successfully!')
+      toast.success('Class added successfully')
       setShowAddClass(false)
       setNewClass({ name: '', capacity: '' })
       fetchData()
@@ -319,7 +347,7 @@ export default function AdminDashboard() {
         class_id: newSubject.class_id
       })
 
-      toast.success('Subject added successfully!')
+      toast.success('Subject added successfully')
       setShowAddSubject(false)
       setNewSubject({ name: '', class_id: '' })
       fetchData()
@@ -544,7 +572,7 @@ export default function AdminDashboard() {
                   </div>
                   <Card>
                     <CardContent>
-                      <div className="overflow-x-auto">
+                     <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
                             <tr className="border-b">
@@ -676,7 +704,7 @@ export default function AdminDashboard() {
         </main>
       </div>
 
-      {/* MODALS */}
+      {/* ADD STUDENT MODAL */}
       {showAddStudent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -703,6 +731,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* ADD TEACHER MODAL */}
       {showAddTeacher && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -725,6 +754,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* ADD CLASS MODAL */}
       {showAddClass && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
@@ -744,6 +774,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* ADD SUBJECT MODAL */}
       {showAddSubject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
