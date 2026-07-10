@@ -32,7 +32,6 @@ export default function StaffLoginPage() {
     setIsLoading(true)
 
     try {
-      // Login with Supabase Auth using email and password
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password
@@ -45,7 +44,6 @@ export default function StaffLoginPage() {
       }
 
       if (data.user) {
-        // Check if user has teacher role
         const role = data.user.user_metadata?.role
         if (role !== 'teacher') {
           toast.error('Access denied. Staff account required.')
@@ -54,7 +52,6 @@ export default function StaffLoginPage() {
           return
         }
 
-        // Check if teacher exists in teachers table
         const { data: teacher, error: teacherError } = await supabase
           .from('teachers')
           .select('id')
@@ -179,6 +176,12 @@ export default function StaffLoginPage() {
             </div>
 
             <div className="mt-6 text-center space-y-2">
+              <Link href="/login" className="text-sm text-blue-600 dark:text-blue-400 hover:underline block">
+                Student Login
+              </Link>
+              <Link href="/login/admin" className="text-sm text-purple-600 dark:text-purple-400 hover:underline block">
+                Admin Login
+              </Link>
               <Link href="/" className="text-sm text-gray-500 dark:text-gray-400 hover:underline block">
                 Back to Home
               </Link>
