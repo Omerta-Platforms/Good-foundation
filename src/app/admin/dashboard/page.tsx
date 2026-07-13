@@ -30,16 +30,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { supabase } from '@/lib/supabase/client'
-import { createClient } from '@supabase/supabase-js'
 import toast from 'react-hot-toast'
-
-// Create admin client with service role key if available
-const supabaseAdmin = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
-  : null
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -61,8 +52,6 @@ export default function AdminDashboard() {
   const [showAddTeacher, setShowAddTeacher] = useState(false)
   const [showAddClass, setShowAddClass] = useState(false)
   const [showAddSubject, setShowAddSubject] = useState(false)
-  const [showEditStudent, setShowEditStudent] = useState(false)
-  const [editingStudent, setEditingStudent] = useState<any>(null)
 
   const [newStudent, setNewStudent] = useState({
     email: '',
@@ -153,7 +142,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // ADD STUDENT - Uses Service Role if available
+  // ADD STUDENT - Uses API route (server-side)
   const handleAddStudent = async () => {
     if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
       toast.error('Please fill in all required fields')
@@ -162,54 +151,31 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      // Check if service role is available
-      if (!supabaseAdmin) {
-        toast.error('Service role key not configured. Please add SUPABASE_SERVICE_ROLE_KEY to environment variables.')
-        setLoading(false)
-        return
-      }
-
-      // Create auth user using service role
-      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email: newStudent.email,
-        password: newStudent.password,
-        email_confirm: true,
-        user_metadata: { 
+      const response = await fetch('/api/admin/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: newStudent.email,
+          password: newStudent.password,
           role: 'student',
-          first_name: newStudent.first_name,
-          last_name: newStudent.last_name
-        }
+          firstName: newStudent.first_name,
+          lastName: newStudent.last_name,
+          admissionNumber: newStudent.admission_number,
+          classId: newStudent.class_id || null,
+          dateOfBirth: newStudent.date_of_birth || null,
+          parentPhone: newStudent.parent_phone || null,
+          parentEmail: newStudent.parent_email || null
+        }),
       })
 
-      if (authError) {
-        console.error('Auth error:', authError)
-        toast.error('Auth error: ' + authError.message)
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to add student')
         setLoading(false)
         return
-      }
-
-      if (authUser.user) {
-        const { error: studentError } = await supabase
-          .from('students')
-          .insert({
-            id: authUser.user.id,
-            email: newStudent.email,
-            password: newStudent.password,
-            first_name: newStudent.first_name,
-            last_name: newStudent.last_name,
-            admission_number: newStudent.admission_number,
-            class_id: newStudent.class_id || null,
-            date_of_birth: newStudent.date_of_birth || null,
-            parent_phone: newStudent.parent_phone || null,
-            parent_email: newStudent.parent_email || null
-          })
-
-        if (studentError) {
-          console.error('Student insert error:', studentError)
-          toast.error('Failed to create student record')
-          setLoading(false)
-          return
-        }
       }
 
       toast.success('Student added successfully')
@@ -225,7 +191,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // ADD TEACHER - Uses Service Role if available
+  // ADD TEACHER - Uses API route (server-side)
   const handleAddTeacher = async () => {
     if (!newTeacher.email || !newTeacher.password || !newTeacher.first_name || !newTeacher.last_name || !newTeacher.staff_id) {
       toast.error('Please fill in all required fields')
@@ -234,52 +200,29 @@ export default function AdminDashboard() {
 
     setLoading(true)
     try {
-      // Check if service role is available
-      if (!supabaseAdmin) {
-        toast.error('Service role key not configured. Please add SUPABASE_SERVICE_ROLE_KEY to environment variables.')
-        setLoading(false)
-        return
-      }
-
-      // Create auth user using service role
-      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email: newTeacher.email,
-        password: newTeacher.password,
-        email_confirm: true,
-        user_metadata: { 
+      const response = await fetch('/api/admin/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: newTeacher.email,
+          password: newTeacher.password,
           role: 'teacher',
-          first_name: newTeacher.first_name,
-          last_name: newTeacher.last_name
-        }
+          firstName: newTeacher.first_name,
+          lastName: newTeacher.last_name,
+          staffId: newTeacher.staff_id,
+          phone: newTeacher.phone || null,
+          subjectId: newTeacher.subject_id || null
+        }),
       })
 
-      if (authError) {
-        console.error('Auth error:', authError)
-        toast.error('Auth error: ' + authError.message)
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to add teacher')
         setLoading(false)
         return
-      }
-
-      if (authUser.user) {
-        const { error: teacherError } = await supabase
-          .from('teachers')
-          .insert({
-            id: authUser.user.id,
-            email: newTeacher.email,
-            staff_id: newTeacher.staff_id,
-            password: newTeacher.password,
-            first_name: newTeacher.first_name,
-            last_name: newTeacher.last_name,
-            phone: newTeacher.phone || null,
-            subject_id: newTeacher.subject_id || null
-          })
-
-        if (teacherError) {
-          console.error('Teacher insert error:', teacherError)
-          toast.error('Failed to create teacher record')
-          setLoading(false)
-          return
-        }
       }
 
       toast.success('Teacher added successfully')
