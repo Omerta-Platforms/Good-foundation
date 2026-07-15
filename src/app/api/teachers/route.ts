@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
-import bcrypt from 'bcryptjs'
+import { supabaseAdmin } from '@/lib/supabase/admin'
+import { isAdminAuthorized } from '@/lib/utils/require-admin'
 
 export async function GET() {
   try {
-    const { data: teachers, error } = await supabase
+    const { data: teachers, error } = await supabaseAdmin
       .from('teachers')
       .select(`
         *,
@@ -28,56 +28,33 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function DELETE(request: Request) {
   try {
-    const body = await request.json()
-    const {
-      email,
-      staff_id,
-      password,
-      first_name,
-      last_name,
-      phone,
-      subject_id
-    } = body
-
-    if (!email || !staff_id || !password || !first_name || !last_name) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+    if (!isAdminAuthorized()) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
 
-    const { data: teacher, error } = await supabase
-      .from('teachers')
-      .insert({
-        email,
-        staff_id,
-        password: hashedPassword,
-        first_name,
-        last_name,
-        phone,
-        subject_id
-      })
-      .select()
-      .single()
+    if (!id) {
+      return NextResponse.json({ error: 'Teacher id is required' }, { status: 400 })
+    }
+
+    await supabaseAdmin.auth.admin.deleteUser(id).catch(() => {
+      // Non-fatal: the auth user may already be gone.
+    })
+
+    const { error } = await supabaseAdmin.from('teachers').delete().eq('id', id)
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ teacher }, { status: 201 })
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error creating teacher:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error deleting teacher:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
