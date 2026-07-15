@@ -2,8 +2,14 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Allow admin dashboard access without checks
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  // Admin dashboard is gated by a shared-password cookie set by
+  // /api/admin/login, NOT by Supabase Auth. If the cookie isn't
+  // present/valid, bounce to the admin login page.
+  if (request.nextUrl.pathname.startsWith('/admin/dashboard')) {
+    const adminCookie = request.cookies.get('admin_session')?.value
+    if (adminCookie !== 'authorized') {
+      return NextResponse.redirect(new URL('/login/admin', request.url))
+    }
     return NextResponse.next()
   }
 
@@ -80,15 +86,12 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = 
     request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname === '/login/staff' ||
-    request.nextUrl.pathname === '/login/admin' ||
     request.nextUrl.pathname === '/register'
 
   if (isAuthRoute && session) {
     // Check role and redirect accordingly
     const role = session.user.user_metadata?.role
-    if (role === 'admin') {
-      return NextResponse.redirect(new URL('/admin/dashboard', request.url))
-    } else if (role === 'teacher') {
+    if (role === 'teacher') {
       return NextResponse.redirect(new URL('/teacher/dashboard', request.url))
     } else if (role === 'student') {
       return NextResponse.redirect(new URL('/student/dashboard', request.url))
@@ -109,3 +112,4 @@ export const config = {
     '/register',
   ],
 }
+
