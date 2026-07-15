@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
-import bcrypt from 'bcryptjs'
+import { supabaseAdmin } from '@/lib/supabase/admin'
+import { isAdminAuthorized } from '@/lib/utils/require-admin'
 
 export async function GET(request: Request) {
   try {
@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const classId = searchParams.get('classId')
     const admissionNumber = searchParams.get('admissionNumber')
 
-    let queryBuilder = supabase.from('students').select(`
+    let queryBuilder = supabaseAdmin.from('students').select(`
       *,
       class:classes(name)
     `)
@@ -47,64 +47,33 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function DELETE(request: Request) {
   try {
-    const body = await request.json()
-    const {
-      email,
-      password,
-      first_name,
-      last_name,
-      admission_number,
-      class_id,
-      date_of_birth,
-      parent_phone,
-      parent_email,
-      address
-    } = body
-
-    // Validate required fields
-    if (!email || !password || !first_name || !last_name || !admission_number || !class_id) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+    if (!isAdminAuthorized()) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
 
-    // Insert student
-    const { data: student, error } = await supabase
-      .from('students')
-      .insert({
-        email,
-        password: hashedPassword,
-        first_name,
-        last_name,
-        admission_number,
-        class_id,
-        date_of_birth,
-        parent_phone,
-        parent_email,
-        address
-      })
-      .select()
-      .single()
+    if (!id) {
+      return NextResponse.json({ error: 'Student id is required' }, { status: 400 })
+    }
+
+    // Also remove their Supabase Auth account so the email can be reused.
+    await supabaseAdmin.auth.admin.deleteUser(id).catch(() => {
+      // Non-fatal: the auth user may already be gone.
+    })
+
+    const { error } = await supabaseAdmin.from('students').delete().eq('id', id)
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ student }, { status: 201 })
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error creating student:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error deleting student:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
+ }
