@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client'
+import { supabaseAdmin } from '@/lib/supabase/admin'
+import { isAdminAuthorized } from '@/lib/utils/require-admin'
 
+// Reads are available to any logged-in area of the app (admin dashboard,
+// teacher dashboard) since class lists aren't sensitive on their own.
 export async function GET() {
   try {
-    const { data: classes, error } = await supabase
+    const { data: classes, error } = await supabaseAdmin
       .from('classes')
       .select(`
         *,
@@ -30,6 +33,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    if (!isAdminAuthorized()) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { name, teacher_id, capacity } = body
 
@@ -40,9 +47,9 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: classData, error } = await supabase
+    const { data: classData, error } = await supabaseAdmin
       .from('classes')
-      .insert({ name, teacher_id, capacity })
+      .insert({ name, teacher_id: teacher_id || null, capacity: capacity || null })
       .select()
       .single()
 
@@ -62,3 +69,30 @@ export async function POST(request: Request) {
     )
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    if (!isAdminAuthorized()) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({ error: 'Class id is required' }, { status: 400 })
+    }
+
+    const { error } = await supabaseAdmin.from('classes').delete().eq('id', id)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting class:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+      }
+
