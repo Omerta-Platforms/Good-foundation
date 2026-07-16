@@ -64,7 +64,7 @@ export default function StudentLoginPage() {
         }
 
         toast.success('Login successful!')
-        router.push('/student/dashboard')
+        window.location.href = '/student/dashboard'
       }
 
     } catch (error) {
