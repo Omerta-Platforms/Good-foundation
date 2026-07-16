@@ -66,7 +66,7 @@ export default function StaffLoginPage() {
         }
 
         toast.success('Login successful')
-        router.push('/teacher/dashboard')
+        window.location.href = '/teacher/dashboard'
       }
 
     } catch (error) {
