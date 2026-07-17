@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { isAdminAuthorized } from '@/lib/utils/require-admin'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Reads are available to any logged-in area of the app (admin dashboard,
 // teacher dashboard) since class lists aren't sensitive on their own.
 export async function GET() {
@@ -70,6 +73,45 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  try {
+    if (!isAdminAuthorized()) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json({ error: 'Class id is required' }, { status: 400 })
+    }
+
+    const body = await request.json()
+    const { teacher_id, name, capacity } = body
+
+    const updates: Record<string, any> = {}
+    if (teacher_id !== undefined) updates.teacher_id = teacher_id || null
+    if (name !== undefined) updates.name = name
+    if (capacity !== undefined) updates.capacity = capacity || null
+
+    const { data: classData, error } = await supabaseAdmin
+      .from('classes')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ class: classData })
+  } catch (error) {
+    console.error('Error updating class:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     if (!isAdminAuthorized()) {
@@ -94,5 +136,5 @@ export async function DELETE(request: Request) {
     console.error('Error deleting class:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
- }
+}
 
