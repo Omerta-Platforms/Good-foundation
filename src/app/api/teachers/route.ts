@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { isAdminAuthorized } from '@/lib/utils/require-admin'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET() {
   try {
     const { data: teachers, error } = await supabaseAdmin
@@ -12,11 +15,14 @@ export async function GET() {
       `)
 
     if (error) {
+      console.error('[api/teachers] Supabase error:', error)
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
       )
     }
+
+    console.log('[api/teachers] returned count:', teachers?.length)
 
     return NextResponse.json({ teachers })
   } catch (error) {
