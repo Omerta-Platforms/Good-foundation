@@ -645,20 +645,38 @@ export default function TeacherDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+      {/* Mobile backdrop - tap outside the sidebar to close it */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0`}>
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PI</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">PI</span>
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Teacher Portal</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Progress International</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Teacher Portal</h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Progress International</p>
-              </div>
+              {/* Close button - only needed/shown on mobile where the sidebar overlays content */}
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+              </button>
             </div>
           </div>
 
@@ -691,6 +709,7 @@ export default function TeacherDashboard() {
                   onClick={() => {
                     setActiveTab(item.id)
                     if (item.id === 'results') fetchResults()
+                    setSidebarOpen(false)
                   }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
