@@ -99,10 +99,10 @@ export default function AdminDashboard() {
     setLoading(true)
     try {
       const [studentsRes, teachersRes, classesRes, subjectsRes] = await Promise.all([
-        fetch('/api/students').then(r => r.json()),
-        fetch('/api/teachers').then(r => r.json()),
-        fetch('/api/classes').then(r => r.json()),
-        fetch('/api/subjects').then(r => r.json()),
+        fetch('/api/students', { cache: 'no-store' }).then(r => r.json()),
+        fetch('/api/teachers', { cache: 'no-store' }).then(r => r.json()),
+        fetch('/api/classes', { cache: 'no-store' }).then(r => r.json()),
+        fetch('/api/subjects', { cache: 'no-store' }).then(r => r.json()),
       ])
 
       const studentData = studentsRes.students || []
@@ -300,6 +300,29 @@ export default function AdminDashboard() {
       fetchData()
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ASSIGN/REASSIGN TEACHER TO CLASS
+  // This is the only way, right now, to link a teacher to a class after
+  // the teacher has already been created — the "Add Teacher" form has
+  // no class field, since one teacher can end up owning a class created
+  // before or after they exist.
+  const handleAssignClassTeacher = async (classId: string, teacherId: string) => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/classes?id=${classId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: teacherId || null })
+      })
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to assign teacher')
+      toast.success('Class teacher updated')
+      fetchData()
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to assign teacher')
     } finally {
       setLoading(false)
     }
@@ -525,7 +548,7 @@ export default function AdminDashboard() {
                         <p className="text-sm font-medium">Add Teacher</p>
                       </CardContent>
                     </Card>
-                    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddClass(true)}>
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddClass(true)
                       <CardContent className="p-4 text-center">
                         <BookOpen className="h-8 w-8 text-primary-600 mx-auto mb-2" />
                         <p className="text-sm font-medium">Add Class</p>
@@ -635,7 +658,7 @@ export default function AdminDashboard() {
                     {classes.map((c) => (
                       <Card key={c.id}>
                         <CardContent className="p-4">
-                          <div className="flex justify-between items-center">
+                          <div className="flex justify-between items-start mb-3">
                             <div>
                               <h3 className="font-semibold">{c.name}</h3>
                               <p className="text-sm text-gray-500">Capacity: {c.capacity || 'N/A'}</p>
@@ -644,6 +667,17 @@ export default function AdminDashboard() {
                               <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Class Teacher</label>
+                          <select
+                            className="w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-900"
+                            value={c.teacher_id || ''}
+                            onChange={(e) => handleAssignClassTeacher(c.id, e.target.value)}
+                          >
+                            <option value="">No teacher assigned</option>
+                            {teachers.map((t) => (
+                              <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>
+                            ))}
+                          </select>
                         </CardContent>
                       </Card>
                     ))}
