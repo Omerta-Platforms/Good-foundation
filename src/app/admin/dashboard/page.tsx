@@ -548,7 +548,7 @@ export default function AdminDashboard() {
                         <p className="text-sm font-medium">Add Teacher</p>
                       </CardContent>
                     </Card>
-                    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddClass(true)
+                    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddClass(true)}>
                       <CardContent className="p-4 text-center">
                         <BookOpen className="h-8 w-8 text-primary-600 mx-auto mb-2" />
                         <p className="text-sm font-medium">Add Class</p>
