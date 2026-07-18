@@ -11,7 +11,7 @@ export async function GET() {
       .from('teachers')
       .select(`
         *,
-        subject:subjects(name)
+        subject:subjects!teachers_subject_id_fkey(name)
       `)
 
     if (error) {
@@ -21,8 +21,6 @@ export async function GET() {
         { status: 500 }
       )
     }
-
-    console.log('[api/teachers] returned count:', teachers?.length)
 
     return NextResponse.json({ teachers })
   } catch (error) {
@@ -63,4 +61,3 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
