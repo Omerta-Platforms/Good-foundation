@@ -166,9 +166,13 @@ export default function TeacherDashboard() {
       }
 
       // Get teacher info
+      // NOTE: teachers and subjects have TWO foreign keys between them
+      // (teachers.subject_id -> subjects.id AND subjects.teacher_id ->
+      // teachers.id), so PostgREST can't guess which one we mean here.
+      // We disambiguate by naming the exact constraint to follow.
       const { data: teacher, error } = await supabase
         .from('teachers')
-        .select('*, subject:subjects(*)')
+        .select('*, subject:subjects!teachers_subject_id_fkey(*)')
         .eq('id', user.id)
         .single()
 
