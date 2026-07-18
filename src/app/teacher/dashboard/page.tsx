@@ -168,31 +168,42 @@ export default function TeacherDashboard() {
       // Get teacher info
       const { data: teacher, error } = await supabase
         .from('teachers')
-        .select('*, subject:subjects(*), classes(*)')
+        .select('*, subject:subjects(*)')
         .eq('id', user.id)
         .single()
 
       if (error) {
-        console.error('Error fetching teacher:', error)
-        toast.error('Failed to load teacher data')
+        console.error('[teacher/dashboard] Error fetching teacher:', error)
+        toast.error(`Failed to load teacher data: ${error.message}`)
         return
       }
 
       setTeacherData(teacher)
 
-      // Get classes
-      const { data: classData } = await supabase
+      // Get ALL classes in the school — a teacher can create a student
+      // in any class, not just ones formally assigned to them.
+      const { data: classData, error: classError } = await supabase
         .from('classes')
         .select('*')
-        .eq('teacher_id', user.id)
+        .order('name')
+
+      if (classError) {
+        console.error('[teacher/dashboard] Error fetching classes:', classError)
+        toast.error(`Failed to load classes: ${classError.message}`)
+      }
 
       setClasses(classData || [])
 
-      // Get subjects
-      const { data: subjectData } = await supabase
+      // Get subjects this teacher specifically teaches (subjects stay
+      // teacher-specific, unlike classes).
+      const { data: subjectData, error: subjectError } = await supabase
         .from('subjects')
         .select('*, class:classes(name)')
         .eq('teacher_id', user.id)
+
+      if (subjectError) {
+        console.error('[teacher/dashboard] Error fetching subjects:', subjectError)
+      }
 
       setSubjects(subjectData || [])
 
@@ -202,7 +213,7 @@ export default function TeacherDashboard() {
       }
 
     } catch (error) {
-      console.error('Error fetching teacher data:', error)
+      console.error('[teacher/dashboard] Error fetching teacher data:', error)
       toast.error('Failed to load dashboard')
     } finally {
       setLoading(false)
