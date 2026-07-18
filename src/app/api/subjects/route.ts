@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { isAdminAuthorized } from '@/lib/utils/require-admin'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -12,7 +15,7 @@ export async function GET(request: Request) {
       .from('subjects')
       .select(`
         *,
-        teacher:teachers(first_name, last_name),
+        teacher:teachers!subjects_teacher_id_fkey(first_name, last_name),
         class:classes(name)
       `)
 
@@ -125,5 +128,5 @@ export async function DELETE(request: Request) {
     console.error('Error deleting subject:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
- }
-      
+}
+
