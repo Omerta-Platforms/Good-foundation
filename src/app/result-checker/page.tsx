@@ -24,6 +24,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { formatDate } from '@/lib/utils'
 import { supabase } from '@/lib/supabase/client'
 import { calculateTotal, calculateAverage } from '@/lib/utils/grading'
+import { generateReportCard, downloadPdfBytes } from '@/lib/utils/pdf'
 
 interface CheckedResult {
   student: {
@@ -104,9 +105,29 @@ export default function ResultCheckerPage() {
     }
   }
 
-  const handleDownloadPDF = () => {
-    // In production, this would generate and download a PDF
-    alert('PDF download functionality will be implemented')
+  const handleDownloadPDF = async () => {
+    if (!result) return
+
+    try {
+      const pdfBytes = await generateReportCard({
+        student_name: result.student.name,
+        admission_number: result.student.admission_number,
+        class_name: result.student.class,
+        session: result.session,
+        term: result.term,
+        subjects: result.subjects,
+        total: result.total,
+        average: result.average,
+      })
+
+      downloadPdfBytes(
+        pdfBytes,
+        `${result.student.admission_number}-${result.session}-${result.term}-report-card.pdf`.replace(/\s+/g, '-')
+      )
+    } catch (err) {
+      console.error('Error generating report card PDF:', err)
+      setError('Failed to generate the PDF. Please try again.')
+    }
   }
 
   const handlePrint = () => {
@@ -432,3 +453,4 @@ export default function ResultCheckerPage() {
     </div>
   )
 }
+        
