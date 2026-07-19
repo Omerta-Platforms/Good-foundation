@@ -75,16 +75,14 @@ export async function middleware(request: NextRequest) {
   // Protected routes
   const isProtectedRoute = 
     request.nextUrl.pathname.startsWith('/dashboard') ||
-    request.nextUrl.pathname.startsWith('/student') ||
     request.nextUrl.pathname.startsWith('/teacher')
 
   if (isProtectedRoute && !session) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL('/login/staff', request.url))
   }
 
   // Auth routes (login, register) - redirect to dashboard if already logged in
   const isAuthRoute = 
-    request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname === '/login/staff' ||
     request.nextUrl.pathname === '/register'
 
@@ -93,8 +91,6 @@ export async function middleware(request: NextRequest) {
     const role = session.user.user_metadata?.role
     if (role === 'teacher') {
       return NextResponse.redirect(new URL('/teacher/dashboard', request.url))
-    } else if (role === 'student') {
-      return NextResponse.redirect(new URL('/student/dashboard', request.url))
     }
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
@@ -105,11 +101,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/dashboard/:path*',
-    '/student/:path*',
     '/teacher/:path*',
     '/admin/:path*',
     '/login/:path*',
     '/register',
   ],
-}
-
+ }
