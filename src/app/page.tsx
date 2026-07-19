@@ -126,9 +126,9 @@ export default function HomePage() {
 
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <Link href="/login">
+              <Link href="/result-checker">
                 <Button variant="default" size="sm">
-                  Login
+                  check results
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
