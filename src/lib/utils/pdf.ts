@@ -144,7 +144,13 @@ export async function generateReportCard(data: ReportCardData): Promise<Uint8Arr
 
 // Triggers a browser download of the generated PDF bytes.
 export function downloadPdfBytes(bytes: Uint8Array, filename: string) {
-  const blob = new Blob([bytes], { type: 'application/pdf' })
+  // pdf-lib's Uint8Array can be typed with an ArrayBufferLike backing
+  // buffer (which technically includes SharedArrayBuffer), while
+  // Blob's constructor type expects a plain ArrayBuffer. Copying into
+  // a fresh Uint8Array guarantees a standard ArrayBuffer and satisfies
+  // TypeScript without changing anything at runtime.
+  const safeBytes = new Uint8Array(bytes)
+  const blob = new Blob([safeBytes], { type: 'application/pdf' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -153,5 +159,5 @@ export function downloadPdfBytes(bytes: Uint8Array, filename: string) {
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
-    }
-      
+}
+
