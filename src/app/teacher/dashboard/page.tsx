@@ -165,27 +165,30 @@ export default function TeacherDashboard() {
         return
       }
 
-      // Get teacher info
-      // NOTE: teachers and subjects have TWO foreign keys between them
-      // (teachers.subject_id -> subjects.id AND subjects.teacher_id ->
-      // teachers.id), so PostgREST can't guess which one we mean here.
-      // We disambiguate by naming the exact constraint to follow.
+      // Get teacher info. We fetch the plain teacher row (no nested
+      // subject join here) so that a problem with that join can never
+      // block classes/students from loading — those are independent
+      // of whether the teacher's own profile join succeeds.
       const { data: teacher, error } = await supabase
         .from('teachers')
-        .select('*, subject:subjects!teachers_subject_id_fkey(*)')
+        .select('*')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (error) {
         console.error('[teacher/dashboard] Error fetching teacher:', error)
         toast.error(`Failed to load teacher data: ${error.message}`)
-        return
+      } else if (!teacher) {
+        console.error('[teacher/dashboard] No teacher row found for auth user:', user.id)
+        toast.error('Your teacher profile could not be found. Please contact the admin.')
+      } else {
+        setTeacherData(teacher)
       }
 
-      setTeacherData(teacher)
-
       // Get ALL classes in the school — a teacher can create a student
-      // in any class, not just ones formally assigned to them.
+      // in any class, not just ones formally assigned to them. This
+      // runs regardless of whether the teacher-info fetch above
+      // succeeded, so a profile problem never blocks "Add Student".
       const { data: classData, error: classError } = await supabase
         .from('classes')
         .select('*')
@@ -1015,6 +1018,19 @@ export default function TeacherDashboard() {
                       </button>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Class *</label>
+                        <select
+                          className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 dark:border-gray-700"
+                          value={selectedClass}
+                          onChange={(e) => setSelectedClass(e.target.value)}
+                        >
+                          <option value="">Select a class</option>
+                          {classes.map((c) => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
                         <Input
