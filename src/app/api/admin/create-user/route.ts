@@ -2,54 +2,24 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { isAdminAuthorized } from '@/lib/utils/require-admin'
 
-// Creates a real Supabase Auth account plus the matching row in
-// students/teachers. This is the ONLY way accounts should be created
-// in this app — do not insert directly into students/teachers from
-// anywhere else, or the person won't be able to log in.
-//
-// Callers:
-// - Admin dashboard (gated by the admin_session cookie)
-// - Teacher dashboard, when a teacher adds a student to their class
-//   (gated by a valid Supabase Auth teacher session token)
+// Creates a real Supabase Auth account plus the matching teacher row.
+// This is admin-only now — students no longer have login accounts
+// (only the public result checker, looked up by admission_number, is
+// used), so student creation goes through the simpler /api/students
+// route instead, which does a plain table insert with no Auth step.
 export async function POST(request: Request) {
   try {
-    const isAdmin = isAdminAuthorized()
-
-    if (!isAdmin) {
-      // If not the admin cookie, require a valid teacher session token,
-      // and only allow role: 'student' through this path (a teacher
-      // should never be able to create another teacher or admin).
-      const authHeader = request.headers.get('authorization')
-      const token = authHeader?.replace('Bearer ', '')
-      if (!token) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-      const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token)
-      if (userError || !userData.user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-      const requestedRole = (await request.clone().json()).role
-      if (requestedRole !== 'student') {
-        return NextResponse.json({ error: 'Teachers can only create student accounts' }, { status: 403 })
-      }
+    if (!isAdminAuthorized()) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { email, password, role, firstName, lastName, staffId, admissionNumber, classId, phone, subjectId, dateOfBirth, parentPhone, parentEmail } = await request.json()
+    const { email, password, firstName, lastName, staffId, phone, subjectId } = await request.json()
 
-    // Validate required fields
-    if (!email || !password || !role || !firstName || !lastName) {
+    if (!email || !password || !firstName || !lastName || !staffId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
-    }
-
-    if (role === 'student' && !admissionNumber) {
-      return NextResponse.json({ error: 'Admission number is required for students' }, { status: 400 })
-    }
-
-    if (role === 'teacher' && !staffId) {
-      return NextResponse.json({ error: 'Staff ID is required for teachers' }, { status: 400 })
     }
 
     // Step 1: Create the real auth account. This is what login actually
@@ -60,7 +30,7 @@ export async function POST(request: Request) {
       password,
       email_confirm: true,
       user_metadata: {
-        role,
+        role: 'teacher',
         first_name: firstName,
         last_name: lastName
       }
@@ -83,37 +53,17 @@ export async function POST(request: Request) {
 
     // Step 2: Create the matching profile row. No password is stored
     // here — Supabase Auth already owns that.
-    let recordError = null
-
-    if (role === 'student') {
-      const { error } = await supabaseAdmin
-        .from('students')
-        .insert({
-          id: authUser.user.id,
-          email,
-          first_name: firstName,
-          last_name: lastName,
-          admission_number: admissionNumber,
-          class_id: classId || null,
-          date_of_birth: dateOfBirth || null,
-          parent_phone: parentPhone || null,
-          parent_email: parentEmail || null
-        })
-      recordError = error
-    } else if (role === 'teacher') {
-      const { error } = await supabaseAdmin
-        .from('teachers')
-        .insert({
-          id: authUser.user.id,
-          email,
-          staff_id: staffId,
-          first_name: firstName,
-          last_name: lastName,
-          phone: phone || null,
-          subject_id: subjectId || null
-        })
-      recordError = error
-    }
+    const { error: recordError } = await supabaseAdmin
+      .from('teachers')
+      .insert({
+        id: authUser.user.id,
+        email,
+        staff_id: staffId,
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone || null,
+        subject_id: subjectId || null
+      })
 
     if (recordError) {
       console.error('Record creation error:', recordError)
@@ -129,7 +79,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       user: authUser.user,
-      message: `${role} created successfully`
+      message: 'Teacher created successfully'
     })
 
   } catch (error: any) {
@@ -140,4 +90,3 @@ export async function POST(request: Request) {
     )
   }
 }
-
