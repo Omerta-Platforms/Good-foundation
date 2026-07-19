@@ -180,7 +180,7 @@ export default function TeacherDashboard() {
         toast.error(`Failed to load teacher data: ${error.message}`)
       } else if (!teacher) {
         console.error('[teacher/dashboard] No teacher row found for auth user:', user.id)
-        toast.error('Your teacher profile could not be found. Please contact the admin.')
+        toast.error(`No teacher profile found for logged-in user ID: ${user.id}`)
       } else {
         setTeacherData(teacher)
       }
@@ -1473,4 +1473,4 @@ export default function TeacherDashboard() {
       </div>
     </div>
   )
-}
+} 
