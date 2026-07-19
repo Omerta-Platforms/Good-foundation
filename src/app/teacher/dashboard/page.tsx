@@ -137,14 +137,9 @@ export default function TeacherDashboard() {
   const [results, setResults] = useState<Result[]>([])
   const [editingResult, setEditingResult] = useState<Result | null>(null)
   const [newStudent, setNewStudent] = useState({
-    email: '',
-    password: '',
     first_name: '',
     last_name: '',
-    admission_number: '',
-    date_of_birth: '',
-    parent_phone: '',
-    parent_email: ''
+    admission_number: ''
   })
   const [newSubject, setNewSubject] = useState({
     name: '',
@@ -252,12 +247,11 @@ export default function TeacherDashboard() {
   }
 
   // 1. ADD STUDENT
-  // Account creation (auth.admin.createUser) requires the service role
-  // key, which must never run in the browser. This calls our server
-  // API route instead, authenticated with the teacher's own session
-  // token so the server can verify they're really logged in.
+  // Students have no login account (only the public result checker,
+  // looked up by admission_number, is used), so this is a plain table
+  // insert via /api/students — no Supabase Auth account is created.
   const handleAddStudent = async () => {
-    if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
+    if (!newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
       toast.error('Please fill in all required fields')
       return
     }
@@ -276,23 +270,17 @@ export default function TeacherDashboard() {
         return
       }
 
-      const response = await fetch('/api/admin/create-user', {
+      const response = await fetch('/api/students', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          email: newStudent.email,
-          password: newStudent.password,
-          role: 'student',
           firstName: newStudent.first_name,
           lastName: newStudent.last_name,
           admissionNumber: newStudent.admission_number,
           classId: selectedClass,
-          dateOfBirth: newStudent.date_of_birth || null,
-          parentPhone: newStudent.parent_phone || null,
-          parentEmail: newStudent.parent_email || null,
         }),
       })
 
@@ -302,17 +290,12 @@ export default function TeacherDashboard() {
         throw new Error(data.error || 'Failed to add student')
       }
 
-      toast.success('Student added successfully! They can now login with their email and password.')
+      toast.success('Student added successfully')
       setShowAddStudent(false)
       setNewStudent({
-        email: '',
-        password: '',
         first_name: '',
         last_name: '',
-        admission_number: '',
-        date_of_birth: '',
-        parent_phone: '',
-        parent_email: ''
+        admission_number: ''
       })
       fetchStudents(selectedClass)
 
@@ -348,23 +331,17 @@ export default function TeacherDashboard() {
 
         for (const row of jsonData) {
           try {
-            const response = await fetch('/api/admin/create-user', {
+            const response = await fetch('/api/students', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${session.access_token}`,
               },
               body: JSON.stringify({
-                email: row.email,
-                password: row.password || 'password123',
-                role: 'student',
                 firstName: row.first_name,
                 lastName: row.last_name,
                 admissionNumber: row.admission_number,
                 classId: selectedClass,
-                dateOfBirth: row.date_of_birth || null,
-                parentPhone: row.parent_phone || null,
-                parentEmail: row.parent_email || null,
               }),
             })
 
@@ -1048,62 +1025,11 @@ export default function TeacherDashboard() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <Input
-                            type="email"
-                            placeholder="student@email.com"
-                            className="pl-10"
-                            value={newStudent.email}
-                            onChange={(e) => setNewStudent({...newStudent, email: e.target.value})}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password *</label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <Input
-                            type="password"
-                            placeholder="Min 6 characters"
-                            className="pl-10"
-                            value={newStudent.password}
-                            onChange={(e) => setNewStudent({...newStudent, password: e.target.value})}
-                          />
-                        </div>
-                      </div>
-                      <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Admission Number *</label>
                         <Input
                           placeholder="PIS/24/0001"
                           value={newStudent.admission_number}
                           onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Birth</label>
-                        <Input
-                          type="date"
-                          value={newStudent.date_of_birth}
-                          onChange={(e) => setNewStudent({...newStudent, date_of_birth: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Phone</label>
-                        <Input
-                          placeholder="+234 800 123 4567"
-                          value={newStudent.parent_phone}
-                          onChange={(e) => setNewStudent({...newStudent, parent_phone: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Email</label>
-                        <Input
-                          type="email"
-                          placeholder="parent@email.com"
-                          value={newStudent.parent_email}
-                          onChange={(e) => setNewStudent({...newStudent, parent_email: e.target.value})}
                         />
                       </div>
                     </div>
@@ -1473,4 +1399,4 @@ export default function TeacherDashboard() {
       </div>
     </div>
   )
-} 
+}
