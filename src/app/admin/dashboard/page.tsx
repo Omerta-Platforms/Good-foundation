@@ -53,15 +53,10 @@ export default function AdminDashboard() {
   const [showAddSubject, setShowAddSubject] = useState(false)
 
   const [newStudent, setNewStudent] = useState({
-    email: '',
-    password: '',
     first_name: '',
     last_name: '',
     admission_number: '',
-    class_id: '',
-    date_of_birth: '',
-    parent_phone: '',
-    parent_email: ''
+    class_id: ''
   })
 
   const [newTeacher, setNewTeacher] = useState({
@@ -131,29 +126,23 @@ export default function AdminDashboard() {
 
   // ADD STUDENT - Uses API route (server-side)
   const handleAddStudent = async () => {
-    if (!newStudent.email || !newStudent.password || !newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
+    if (!newStudent.first_name || !newStudent.last_name || !newStudent.admission_number || !newStudent.class_id) {
       toast.error('Please fill in all required fields')
       return
     }
 
     setLoading(true)
     try {
-      const response = await fetch('/api/admin/create-user', {
+      const response = await fetch('/api/students', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: newStudent.email,
-          password: newStudent.password,
-          role: 'student',
           firstName: newStudent.first_name,
           lastName: newStudent.last_name,
           admissionNumber: newStudent.admission_number,
-          classId: newStudent.class_id || null,
-          dateOfBirth: newStudent.date_of_birth || null,
-          parentPhone: newStudent.parent_phone || null,
-          parentEmail: newStudent.parent_email || null
+          classId: newStudent.class_id,
         }),
       })
 
@@ -167,7 +156,7 @@ export default function AdminDashboard() {
 
       toast.success('Student added successfully')
       setShowAddStudent(false)
-      setNewStudent({ email: '', password: '', first_name: '', last_name: '', admission_number: '', class_id: '', date_of_birth: '', parent_phone: '', parent_email: '' })
+      setNewStudent({ first_name: '', last_name: '', admission_number: '', class_id: '' })
       fetchData()
 
     } catch (error: any) {
@@ -195,7 +184,6 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           email: newTeacher.email,
           password: newTeacher.password,
-          role: 'teacher',
           firstName: newTeacher.first_name,
           lastName: newTeacher.last_name,
           staffId: newTeacher.staff_id,
@@ -728,18 +716,11 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-2 gap-4">
               <Input placeholder="First Name *" value={newStudent.first_name} onChange={(e) => setNewStudent({...newStudent, first_name: e.target.value})} />
               <Input placeholder="Last Name *" value={newStudent.last_name} onChange={(e) => setNewStudent({...newStudent, last_name: e.target.value})} />
-              <Input placeholder="Email *" type="email" value={newStudent.email} onChange={(e) => setNewStudent({...newStudent, email: e.target.value})} />
-              <Input placeholder="Password *" type="password" value={newStudent.password} onChange={(e) => setNewStudent({...newStudent, password: e.target.value})} />
               <Input placeholder="Admission Number *" value={newStudent.admission_number} onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})} />
               <select className="px-4 py-2 border rounded-lg bg-white dark:bg-gray-900" value={newStudent.class_id} onChange={(e) => setNewStudent({...newStudent, class_id: e.target.value})}>
-                <option value="">Select Class</option>
+                <option value="">Select Class *</option>
                 {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
-              <Input placeholder="Date of Birth" type="date" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({...newStudent, date_of_birth: e.target.value})} />
-              <Input placeholder="Parent Phone" value={newStudent.parent_phone} onChange={(e) => setNewStudent({...newStudent, parent_phone: e.target.value})} />
-              <div className="col-span-2">
-                <Input placeholder="Parent Email" type="email" value={newStudent.parent_email} onChange={(e) => setNewStudent({...newStudent, parent_email: e.target.value})} />
-              </div>
             </div>
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddStudent(false)}>Cancel</Button>
