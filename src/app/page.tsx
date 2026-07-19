@@ -474,6 +474,7 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
+         </div>
 
           <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
             <p>&copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.</p>
