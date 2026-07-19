@@ -128,7 +128,7 @@ export default function HomePage() {
               <ThemeToggle />
               <Link href="/result-checker">
                 <Button variant="default" size="sm">
-                  check results
+                  Results
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
