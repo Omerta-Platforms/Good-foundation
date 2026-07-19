@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { isAdminAuthorized } from '@/lib/utils/require-admin'
 
+// This route reads live data that changes whenever the admin/teacher
+// creates or deletes a student, so it must never be cached — otherwise
+// the dashboard can keep showing stale counts/lists after an update.
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -47,6 +53,58 @@ export async function GET(request: Request) {
   }
 }
 
+// Creates a student record directly — students no longer have login
+// accounts (only the public result checker is used, looked up by
+// admission_number), so there's no Supabase Auth step here, unlike
+// teachers. Callable by the admin dashboard (admin_session cookie) or
+// a logged-in teacher (Supabase Auth session token).
+export async function POST(request: Request) {
+  try {
+    const isAdmin = isAdminAuthorized()
+
+    if (!isAdmin) {
+      const authHeader = request.headers.get('authorization')
+      const token = authHeader?.replace('Bearer ', '')
+      if (!token) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token)
+      if (userError || !userData.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+    }
+
+    const { firstName, lastName, admissionNumber, classId } = await request.json()
+
+    if (!firstName || !lastName || !admissionNumber || !classId) {
+      return NextResponse.json(
+        { error: 'First name, last name, admission number, and class are required' },
+        { status: 400 }
+      )
+    }
+
+    const { data: student, error } = await supabaseAdmin
+      .from('students')
+      .insert({
+        first_name: firstName,
+        last_name: lastName,
+        admission_number: admissionNumber,
+        class_id: classId,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    return NextResponse.json({ success: true, student }, { status: 201 })
+  } catch (error) {
+    console.error('Error creating student:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: Request) {
   try {
     if (!isAdminAuthorized()) {
@@ -60,11 +118,6 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Student id is required' }, { status: 400 })
     }
 
-    // Also remove their Supabase Auth account so the email can be reused.
-    await supabaseAdmin.auth.admin.deleteUser(id).catch(() => {
-      // Non-fatal: the auth user may already be gone.
-    })
-
     const { error } = await supabaseAdmin.from('students').delete().eq('id', id)
 
     if (error) {
@@ -76,4 +129,5 @@ export async function DELETE(request: Request) {
     console.error('Error deleting student:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
- }
+}
+                                     
