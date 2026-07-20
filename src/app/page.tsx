@@ -225,7 +225,7 @@ export default function HomePage() {
                       your child at Progress International.
                     </p>
                     <p className="mt-4 font-semibold text-gray-800 dark:text-gray-200">
-                      - Dr. Adebayo Ogunlade
+                      - Mr Michael Obala
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Principal</p>
                   </div>
