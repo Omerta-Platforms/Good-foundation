@@ -466,7 +466,7 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-center space-x-2">
                   <Phone className="h-5 w-5 text-primary-400" />
-                  <span>+234 800 123 4567</span>
+                  <span>07035667900</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <Mail className="h-5 w-5 text-primary-400" />
