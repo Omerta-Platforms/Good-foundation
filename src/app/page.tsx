@@ -62,9 +62,6 @@ const upcomingEvents = [
 ]
 
 const quickLinks = [
-  { label: 'Admissions', icon: FileText, href: '/admissions' },
-  { label: 'Academic Calendar', icon: Calendar, href: '#' },
-  { label: 'Student Portal', icon: UserCircle, href: '/login' },
   { label: 'Result Checker', icon: GraduationCap, href: '/result-checker' }
 ]
 
@@ -347,7 +344,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 text-center mb-8">
             Quick Links
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6 max-w-md mx-auto">
             {quickLinks.map((link) => {
               const Icon = link.icon
               return (
@@ -366,8 +363,6 @@ export default function HomePage() {
               )
             })}
           </div>
-        </div>
-      </section>
 
       {/* Gallery Preview */}
       <section className="py-16 bg-white dark:bg-gray-900">
