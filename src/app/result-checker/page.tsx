@@ -34,9 +34,10 @@ interface CheckedResult {
   }
   session: string
   term: string
-  subjects: { name: string; score: number; grade: string; remark: string }[]
+  subjects: { name: string; ca1: number; ca2: number; exam_score: number; score: number; grade: string; remark: string }[]
   total: number
   average: number
+  position: number | null
 }
 
 export default function ResultCheckerPage() {
@@ -90,12 +91,16 @@ export default function ResultCheckerPage() {
         term,
         subjects: data.map((row: any) => ({
           name: row.subject_name,
+          ca1: row.ca1,
+          ca2: row.ca2,
+          exam_score: row.exam_score,
           score: row.score,
           grade: row.grade,
           remark: row.remark,
         })),
         total: calculateTotal(scores),
         average: calculateAverage(scores),
+        position: first.position ?? null,
       })
     } catch (err) {
       console.error('Result checker error:', err)
@@ -118,6 +123,7 @@ export default function ResultCheckerPage() {
         subjects: result.subjects,
         total: result.total,
         average: result.average,
+        position: result.position ? ordinal(result.position) : undefined,
       })
 
       downloadPdfBytes(
@@ -132,6 +138,12 @@ export default function ResultCheckerPage() {
 
   const handlePrint = () => {
     window.print()
+  }
+
+  const ordinal = (n: number) => {
+    const s = ['th', 'st', 'nd', 'rd']
+    const v = n % 100
+    return n + (s[(v - 20) % 10] || s[v] || s[0])
   }
 
   const getGradeColor = (grade: string) => {
@@ -341,7 +353,10 @@ export default function ResultCheckerPage() {
                       <thead>
                         <tr className="border-b border-gray-200 dark:border-gray-800">
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Subject</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Score</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">1st CA</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">2nd CA</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Exam</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Total</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Grade</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Remark</th>
                         </tr>
@@ -350,6 +365,9 @@ export default function ResultCheckerPage() {
                         {result.subjects.map((subject, index) => (
                           <tr key={index} className="border-b border-gray-100 dark:border-gray-800/50">
                             <td className="py-3 px-4 text-sm text-gray-800 dark:text-gray-200">{subject.name}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{subject.ca1}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{subject.ca2}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{subject.exam_score}</td>
                             <td className="py-3 px-4 text-sm font-semibold text-gray-800 dark:text-gray-200">{subject.score}</td>
                             <td className="py-3 px-4">
                               <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${getGradeColor(subject.grade)}`}>
@@ -368,7 +386,7 @@ export default function ResultCheckerPage() {
               </Card>
 
               {/* Summary Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -406,6 +424,22 @@ export default function ResultCheckerPage() {
                       </div>
                       <div className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
                         <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Class Position</p>
+                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                          {result.position ? ordinal(result.position) : 'N/A'}
+                        </p>
+                      </div>
+                      <div className="p-2 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
+                        <GraduationCap className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                       </div>
                     </div>
                   </CardContent>
@@ -453,4 +487,3 @@ export default function ResultCheckerPage() {
     </div>
   )
 }
-        
