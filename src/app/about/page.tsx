@@ -336,12 +336,12 @@ export default function AboutPage() {
           <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
             Give your child the gift of quality education at Progress International Group of Schools
           </p>
-          <Link href="/admissions">
+          <a href="jj2126924@gmail.com?subject=Admission%20Inquiry&body=Hello%20Progress%20International%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child." target="_blank" rel="noopener noreferrer">
             <Button variant="default" size="lg" className="bg-white text-primary-700 hover:bg-gray-100">
               Apply Now
               <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
-          </Link>
+          </a>
         </div>
       </section>
 
