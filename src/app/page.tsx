@@ -402,12 +402,17 @@ export default function HomePage() {
           <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
             Enroll your child today and give them the gift of quality education.
           </p>
-          <Link href="/admissions">
-            <Button variant="default" size="lg" className="bg-white text-primary-700 hover:bg-gray-100">
-              Apply Now
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
+          <Button
+            variant="default"
+            size="lg"
+            className="bg-white text-primary-700 hover:bg-gray-100"
+            onClick={() => {
+              window.location.href = 'mailto:info@progressschools.edu.ng?subject=Admission%20Inquiry&body=Hello%20Progress%20International%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.'
+            }}
+          >
+            Apply Now
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
         </div>
       </section>
 
