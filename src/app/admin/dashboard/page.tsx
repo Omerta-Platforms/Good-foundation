@@ -81,6 +81,37 @@ export default function AdminDashboard() {
     teacher_id: ''
   })
 
+  // Positions tab state
+  const [positionsClassId, setPositionsClassId] = useState('')
+  const [positionsSession, setPositionsSession] = useState('2024/2025')
+  const [positionsTerm, setPositionsTerm] = useState('First Term')
+  const [positionsData, setPositionsData] = useState<any[]>([])
+  const [positionsLoading, setPositionsLoading] = useState(false)
+
+  const fetchPositions = async () => {
+    if (!positionsClassId || !positionsSession || !positionsTerm) return
+    setPositionsLoading(true)
+    try {
+      const res = await fetch(
+        `/api/positions?classId=${positionsClassId}&session=${encodeURIComponent(positionsSession)}&term=${encodeURIComponent(positionsTerm)}`,
+        { cache: 'no-store' }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to load positions')
+      setPositionsData(data.positions || [])
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to load positions')
+    } finally {
+      setPositionsLoading(false)
+    }
+  }
+
+  const ordinal = (n: number) => {
+    const s = ['th', 'st', 'nd', 'rd']
+    const v = n % 100
+    return n + (s[(v - 20) % 10] || s[v] || s[0])
+  }
+
   useEffect(() => {
     fetchData()
   }, [])
@@ -372,6 +403,7 @@ export default function AdminDashboard() {
     { id: 'teachers', label: 'Teachers', icon: GraduationCap },
     { id: 'classes', label: 'Classes', icon: BookOpen },
     { id: 'subjects', label: 'Subjects', icon: ClipboardList },
+    { id: 'positions', label: 'Positions', icon: BarChart3 },
   ]
 
   return (
@@ -698,6 +730,83 @@ export default function AdminDashboard() {
                       </Card>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {activeTab === 'positions' && (
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Class Positions</h2>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Overall class ranking by total score across all published subjects for the selected term.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <select
+                      className="px-4 py-2 border rounded-lg bg-white dark:bg-gray-900"
+                      value={positionsClassId}
+                      onChange={(e) => setPositionsClassId(e.target.value)}
+                    >
+                      <option value="">Select Class</option>
+                      {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    <Input
+                      placeholder="Session (e.g. 2024/2025)"
+                      value={positionsSession}
+                      onChange={(e) => setPositionsSession(e.target.value)}
+                    />
+                    <select
+                      className="px-4 py-2 border rounded-lg bg-white dark:bg-gray-900"
+                      value={positionsTerm}
+                      onChange={(e) => setPositionsTerm(e.target.value)}
+                    >
+                      <option value="First Term">First Term</option>
+                      <option value="Second Term">Second Term</option>
+                      <option value="Third Term">Third Term</option>
+                    </select>
+                  </div>
+                  <Button onClick={fetchPositions} disabled={!positionsClassId || positionsLoading}>
+                    {positionsLoading ? 'Loading...' : 'Show Positions'}
+                  </Button>
+
+                  {positionsData.length > 0 && (
+                    <Card className="mt-6">
+                      <CardContent className="p-4 overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b border-gray-200 dark:border-gray-800">
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Position</th>
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Student</th>
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Admission No</th>
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Total Score</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {positionsData.map((p) => (
+                              <tr key={p.student_id} className="border-b border-gray-100 dark:border-gray-800/50">
+                                <td className="py-3 px-4 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                  {ordinal(p.position)}
+                                </td>
+                                <td className="py-3 px-4 text-sm text-gray-800 dark:text-gray-200">
+                                  {p.first_name} {p.last_name}
+                                </td>
+                                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                                  {p.admission_number}
+                                </td>
+                                <td className="py-3 px-4 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                  {p.total}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {!positionsLoading && positionsClassId && positionsData.length === 0 && (
+                    <p className="text-sm text-gray-500 mt-6">
+                      No published results yet for this class/session/term.
+                    </p>
+                  )}
                 </div>
               )}
             </>
