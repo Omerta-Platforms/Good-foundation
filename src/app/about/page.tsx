@@ -405,10 +405,10 @@ export default function AboutPage() {
                   <Mail className="h-5 w-5 text-primary-400" />
                   <span>info@progressschools.edu.ng</span>
                 </li>
-               </ul>
-              </div>
-             </div>
+              </ul>
             </div>
+          </div>
+        </div>
 
           <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
             <p>&copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.</p>
