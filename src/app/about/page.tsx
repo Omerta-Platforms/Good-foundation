@@ -30,12 +30,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const managementTeam = [
-  { name: 'Dr. Adebayo Ogunlade', position: 'Principal', image: '/images/principal.jpg' },
-  { name: 'Mrs. Funke Adeyemi', position: 'Vice Principal (Academics)', image: '/images/vp-academics.jpg' },
-  { name: 'Mr. Oluwole Adebayo', position: 'Vice Principal (Admin)', image: '/images/vp-admin.jpg' },
-  { name: 'Mrs. Bola Ogunleye', position: 'Head of Academics', image: '/images/head-academics.jpg' },
-  { name: 'Mr. Segun Williams', position: 'Head of Administration', image: '/images/head-admin.jpg' },
-  { name: 'Mrs. Ngozi Okonkwo', position: 'Head of Students Affairs', image: '/images/head-students.jpg' },
+  { name: 'Mr. Michael Obala', position: 'Principal', image: '/images/principal.jpg' },
+  { name: 'Mr. Stephen', position: 'Vice Principal (Academics)', image: '/images/vp-academics.jpg' },
+  { name: 'Mrs. Ruth Sunday', position: 'Head of Academics', image: '/images/head-academics.jpg' },
+  { name: 'Mr. Audu Ejeh', position: 'Technical Designer', image: '/images/head-admin.jpg' },
+  { name: 'Mr. Joshua Oghene-Tega', position: 'Head of Students Affairs', image: '/images/head-students.jpg' },
 ]
 
 const coreValues = [
@@ -80,9 +79,9 @@ export default function AboutPage() {
                 <Link href="/contact" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Contact</Link>
               </nav>
               <ThemeToggle />
-              <Link href="/login">
+              <Link href="/result-checker">
                 <Button variant="default" size="sm">
-                  Login
+                  Results
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -408,24 +407,8 @@ export default function AboutPage() {
                 </li>
               </ul>
             </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Stay Updated</h4>
-              <p className="text-sm text-gray-400 mb-3">
-                Subscribe to our newsletter for updates and announcements.
-              </p>
-              <div className="flex">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="flex-1 px-3 py-2 bg-gray-800 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-                <Button variant="default" size="sm" className="rounded-l-none bg-primary-600 hover:bg-primary-700">
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
           </div>
+         </div>
 
           <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
             <p>&copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.</p>
