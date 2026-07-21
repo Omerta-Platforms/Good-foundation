@@ -155,9 +155,9 @@ export default function HomePage() {
                   </h1>
                   <p className="text-xl text-gray-200 mb-8">{slide.subtitle}</p>
                   <div className="flex flex-wrap gap-4">
-                    <Link href="/admissions">
+                    <Link href="/result-checker">
                       <Button variant="default" size="lg" className="bg-white text-primary-700 hover:bg-gray-100">
-                        Apply Now
+                        Results
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
                     </Link>
@@ -450,7 +450,6 @@ export default function HomePage() {
               <h4 className="font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link href="/admissions" className="hover:text-white transition-colors">Admissions</Link></li>
                 <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
                 <li><Link href="/result-checker" className="hover:text-white transition-colors">Check Results</Link></li>
               </ul>
