@@ -445,17 +445,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="/result-checker" className="hover:text-white transition-colors">Check Results</Link></li>
-              </ul>
-            </div>
-              
-             {/* Contact */}
+            {/* Contact */}
             <div>
               <h4 className="font-semibold mb-4">Contact</h4>
               <ul className="space-y-3 text-sm text-gray-400">
