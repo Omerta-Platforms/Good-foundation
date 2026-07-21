@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { 
   Award, 
   Users, 
@@ -23,7 +22,8 @@ import {
   Facebook,
   Twitter,
   Instagram,
-  Youtube
+  Youtube,
+  UserCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -79,9 +79,9 @@ export default function AboutPage() {
                 <Link href="/contact" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Contact</Link>
               </nav>
               <ThemeToggle />
-              <Link href="/result-checker">
+              <Link href="/login">
                 <Button variant="default" size="sm">
-                  Results
+                  Login
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -229,10 +229,8 @@ export default function AboutPage() {
             {managementTeam.map((member, index) => (
               <Card key={index} className="text-center hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
-                  <div className="w-32 h-32 mx-auto bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-4">
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Users className="h-16 w-16 text-gray-400 dark:text-gray-500" />
-                    </div>
+                  <div className="w-24 h-24 mx-auto bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-4 flex items-center justify-center">
+                    <UserCircle className="h-16 w-16 text-gray-400 dark:text-gray-500" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                     {member.name}
@@ -347,10 +345,11 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer without Stay Updated */}
       <footer className="bg-gray-900 dark:bg-gray-950 text-white">
         <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* About */}
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
@@ -380,6 +379,7 @@ export default function AboutPage() {
               </div>
             </div>
 
+            {/* Quick Links */}
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2 text-sm text-gray-400">
@@ -390,23 +390,23 @@ export default function AboutPage() {
               </ul>
             </div>
 
+            {/* Contact */}
             <div>
               <h4 className="font-semibold mb-4">Contact</h4>
-                <ul className="space-y-3 text-sm text-gray-400">
-                  <li className="flex items-start space-x-2">
-                    <MapPin className="h-5 w-5 text-primary-400 flex-shrink-0 mt-0.5" />
-                    <span>123 Education Avenue, Lafia, Nasarawa State</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <Phone className="h-5 w-5 text-primary-400" />
-                    <span>+234 800 123 4567</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <Mail className="h-5 w-5 text-primary-400" />
-                    <span>info@progressschools.edu.ng</span>
-                  </li>
-                </ul>
-              </div>
+              <ul className="space-y-3 text-sm text-gray-400">
+                <li className="flex items-start space-x-2">
+                  <MapPin className="h-5 w-5 text-primary-400 flex-shrink-0 mt-0.5" />
+                  <span>Behind Tomato Market, Lafia, Nasarawa State</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <Phone className="h-5 w-5 text-primary-400" />
+                  <span>+234 800 123 4567</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <Mail className="h-5 w-5 text-primary-400" />
+                  <span>info@progressschools.edu.ng</span>
+                </li>
+              </ul>
             </div>
           </div>
 
