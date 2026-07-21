@@ -392,36 +392,20 @@ export default function AboutPage() {
 
             <div>
               <h4 className="font-semibold mb-4">Contact</h4>
-              <ul className="space-y-3 text-sm text-gray-400">
-                <li className="flex items-start space-x-2">
-                  <MapPin className="h-5 w-5 text-primary-400 flex-shrink-0 mt-0.5" />
-                  <span>123 Education Avenue, Lafia, Nasarawa State</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <Phone className="h-5 w-5 text-primary-400" />
-                  <span>+234 800 123 4567</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <Mail className="h-5 w-5 text-primary-400" />
-                  <span>info@progressschools.edu.ng</span>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Stay Updated</h4>
-              <p className="text-sm text-gray-400 mb-3">
-                Subscribe to our newsletter for updates and announcements.
-              </p>
-              <div className="flex">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="flex-1 px-3 py-2 bg-gray-800 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-                <Button variant="default" size="sm" className="rounded-l-none bg-primary-600 hover:bg-primary-700">
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
+                <ul className="space-y-3 text-sm text-gray-400">
+                  <li className="flex items-start space-x-2">
+                    <MapPin className="h-5 w-5 text-primary-400 flex-shrink-0 mt-0.5" />
+                    <span>123 Education Avenue, Lafia, Nasarawa State</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Phone className="h-5 w-5 text-primary-400" />
+                    <span>+234 800 123 4567</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Mail className="h-5 w-5 text-primary-400" />
+                    <span>info@progressschools.edu.ng</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
