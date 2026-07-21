@@ -407,8 +407,24 @@ export default function AboutPage() {
                 </li>
               </ul>
             </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Stay Updated</h4>
+              <p className="text-sm text-gray-400 mb-3">
+                Subscribe to our newsletter for updates and announcements.
+              </p>
+              <div className="flex">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="flex-1 px-3 py-2 bg-gray-800 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <Button variant="default" size="sm" className="rounded-l-none bg-primary-600 hover:bg-primary-700">
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
 
           <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
             <p>&copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.</p>
