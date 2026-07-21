@@ -610,9 +610,7 @@ export default function TeacherDashboard() {
   // 8. DOWNLOAD RESULT TEMPLATE
   const downloadResultTemplate = () => {
     const template = [
-      { admission_number: 'PIS/24/0001', ca1: 18, ca2: 17, exam_score: 55 },
-      { admission_number: 'PIS/24/0002', ca1: 15, ca2: 14, exam_score: 48 },
-      { admission_number: 'PIS/24/0003', ca1: 12, ca2: 13, exam_score: 40 }
+      { admission_number: , ca1: , ca2: , exam_score:  }
     ]
     
     const ws = XLSX.utils.json_to_sheet(template)
