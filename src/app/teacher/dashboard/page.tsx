@@ -83,6 +83,9 @@ interface Result {
   id: string
   student_id: string
   subject_id: string
+  ca1: number
+  ca2: number
+  exam_score: number
   score: number
   grade: string
   remark: string
@@ -114,7 +117,9 @@ interface ExcelRow {
 
 interface ResultRow {
   admission_number: string
-  score: number
+  ca1: number
+  ca2: number
+  exam_score: number
 }
 
 export default function TeacherDashboard() {
@@ -442,15 +447,23 @@ export default function TeacherDashboard() {
               continue
             }
 
-            const score = parseFloat(String(row.score))
-            if (isNaN(score) || score < 0 || score > 100) {
+            const ca1 = parseFloat(String(row.ca1))
+            const ca2 = parseFloat(String(row.ca2))
+            const examScore = parseFloat(String(row.exam_score))
+
+            if (
+              isNaN(ca1) || ca1 < 0 || ca1 > 20 ||
+              isNaN(ca2) || ca2 < 0 || ca2 > 20 ||
+              isNaN(examScore) || examScore < 0 || examScore > 60
+            ) {
               errorCount++
-              console.error('Invalid score:', row.score)
+              console.error('Invalid CA1/CA2/Exam score:', row)
               continue
             }
 
-            const grade = calculateGrade(score)
-            const remark = getRemark(score)
+            const totalScore = ca1 + ca2 + examScore
+            const grade = calculateGrade(totalScore)
+            const remark = getRemark(totalScore)
 
             // Check if result already exists
             const { data: existing } = await supabase
@@ -464,10 +477,14 @@ export default function TeacherDashboard() {
 
             if (existing) {
               // Update existing result
+              // (score is a generated column — updating ca1/ca2/exam_score
+              // is enough for it to recompute automatically)
               await supabase
                 .from('results')
                 .update({
-                  score: score,
+                  ca1,
+                  ca2,
+                  exam_score: examScore,
                   grade: grade,
                   remark: remark
                 })
@@ -477,7 +494,9 @@ export default function TeacherDashboard() {
               await supabase.from('results').insert({
                 student_id: student.id,
                 subject_id: selectedSubject,
-                score: score,
+                ca1,
+                ca2,
+                exam_score: examScore,
                 grade: grade,
                 remark: remark,
                 session: selectedSession,
@@ -536,14 +555,18 @@ export default function TeacherDashboard() {
   const handleEditResult = async () => {
     if (!editingResult) return
 
+    const totalScore = (editingResult.ca1 || 0) + (editingResult.ca2 || 0) + (editingResult.exam_score || 0)
+
     setLoading(true)
     try {
       const { error } = await supabase
         .from('results')
         .update({
-          score: editingResult.score,
-          grade: calculateGrade(editingResult.score),
-          remark: getRemark(editingResult.score)
+          ca1: editingResult.ca1,
+          ca2: editingResult.ca2,
+          exam_score: editingResult.exam_score,
+          grade: calculateGrade(totalScore),
+          remark: getRemark(totalScore)
         })
         .eq('id', editingResult.id)
 
@@ -587,9 +610,9 @@ export default function TeacherDashboard() {
   // 8. DOWNLOAD RESULT TEMPLATE
   const downloadResultTemplate = () => {
     const template = [
-      { admission_number: 'PIS/24/0001', score: 85 },
-      { admission_number: 'PIS/24/0002', score: 72 },
-      { admission_number: 'PIS/24/0003', score: 68 }
+      { admission_number: 'PIS/24/0001', ca1: 18, ca2: 17, exam_score: 55 },
+      { admission_number: 'PIS/24/0002', ca1: 15, ca2: 14, exam_score: 48 },
+      { admission_number: 'PIS/24/0003', ca1: 12, ca2: 13, exam_score: 40 }
     ]
     
     const ws = XLSX.utils.json_to_sheet(template)
@@ -657,7 +680,7 @@ export default function TeacherDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">PI</span>
+                 <span className="text-white font-bold text-sm">PI</span>
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Teacher Portal</h2>
@@ -943,7 +966,6 @@ export default function TeacherDashboard() {
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">#</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Name</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Admission No</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Email</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Class</th>
                           <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
                         </tr>
@@ -952,8 +974,7 @@ export default function TeacherDashboard() {
                         {students
                           .filter(s => 
                             `${s.first_name} ${s.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            s.admission_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            s.email?.toLowerCase().includes(searchQuery.toLowerCase())
+                            s.admission_number.toLowerCase().includes(searchQuery.toLowerCase())
                           )
                           .map((student, index) => (
                             <tr key={student.id} className="border-b border-gray-100 dark:border-gray-800/50">
@@ -962,7 +983,6 @@ export default function TeacherDashboard() {
                                 {student.first_name} {student.last_name}
                               </td>
                               <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{student.admission_number}</td>
-                              <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{student.email || 'Not set'}</td>
                               <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{student.class?.name}</td>
                               <td className="py-3 px-4 text-right">
                                 <Button variant="ghost" size="sm">
@@ -973,7 +993,7 @@ export default function TeacherDashboard() {
                           ))}
                         {students.length === 0 && (
                           <tr>
-                            <td colSpan={6} className="py-8 text-center text-gray-500 dark:text-gray-400">
+                            <td colSpan={5} className="py-8 text-center text-gray-500 dark:text-gray-400">
                               No students in this class. Add students to get started.
                             </td>
                           </tr>
@@ -1248,7 +1268,10 @@ export default function TeacherDashboard() {
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">#</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Student</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Admission No</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Score</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">1st CA</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">2nd CA</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Exam</th>
+                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Total</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Grade</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Remark</th>
                           <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
@@ -1265,6 +1288,9 @@ export default function TeacherDashboard() {
                             <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                               {result.student?.admission_number}
                             </td>
+                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{result.ca1}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{result.ca2}</td>
+                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{result.exam_score}</td>
                             <td className="py-3 px-4 text-sm font-semibold text-gray-800 dark:text-gray-200">
                               {result.score}
                             </td>
@@ -1352,34 +1378,76 @@ export default function TeacherDashboard() {
                           </span>
                         </p>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Score *
-                        </label>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="Enter score (0-100)"
-                          value={editingResult.score}
-                          onChange={(e) => setEditingResult({
-                            ...editingResult,
-                            score: parseInt(e.target.value) || 0
-                          })}
-                        />
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            1st CA *
+                          </label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="20"
+                            placeholder="0-20"
+                            value={editingResult.ca1}
+                            onChange={(e) => setEditingResult({
+                              ...editingResult,
+                              ca1: parseInt(e.target.value) || 0
+                            })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            2nd CA *
+                          </label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="20"
+                            placeholder="0-20"
+                            value={editingResult.ca2}
+                            onChange={(e) => setEditingResult({
+                              ...editingResult,
+                              ca2: parseInt(e.target.value) || 0
+                            })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Exam *
+                          </label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="60"
+                            placeholder="0-60"
+                            value={editingResult.exam_score}
+                            onChange={(e) => setEditingResult({
+                              ...editingResult,
+                              exam_score: parseInt(e.target.value) || 0
+                            })}
+                          />
+                        </div>
                       </div>
-                      <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Grade: <span className={`font-semibold ${getGradeColor(calculateGrade(editingResult.score))}`}>
-                            {calculateGrade(editingResult.score)}
-                          </span>
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Remark: <span className="font-medium text-gray-800 dark:text-gray-200">
-                            {getRemark(editingResult.score)}
-                          </span>
-                        </p>
-                      </div>
+                      {(() => {
+                        const total = (editingResult.ca1 || 0) + (editingResult.ca2 || 0) + (editingResult.exam_score || 0)
+                        return (
+                          <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Total: <span className="font-semibold text-gray-800 dark:text-gray-200">{total}/100</span>
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                             Grade: <span className={`font-semibold ${getGradeColor(calculateGrade(total))}`}>
+                                {calculateGrade(total)}
+                              </span>
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Remark: <span className="font-medium text-gray-800 dark:text-gray-200">
+                                {getRemark(total)}
+                              </span>
+                            </p>
+                          </div>
+                        )
+                      })()}
                     </div>
                     <div className="flex justify-end space-x-3 mt-6">
                       <Button variant="outline" onClick={() => {
