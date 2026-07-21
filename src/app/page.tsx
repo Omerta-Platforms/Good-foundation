@@ -363,6 +363,7 @@ export default function HomePage() {
               )
             })}
           </div>
+        </section>
 
       {/* Gallery Preview */}
       <section className="py-16 bg-white dark:bg-gray-900">
