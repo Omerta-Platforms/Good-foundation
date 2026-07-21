@@ -431,7 +431,7 @@ export default function AdminDashboard() {
                 <span className="text-primary-600 dark:text-primary-400 font-bold text-lg">A</span>
               </div>
               <div>
-                <p className="font-semibold text-gray-800 dark:text-gray-200">Admin</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-200">Principal</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Super Administrator</p>
               </div>
             </div>
