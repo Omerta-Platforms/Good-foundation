@@ -79,9 +79,9 @@ export default function AboutPage() {
                 <Link href="/contact" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Contact</Link>
               </nav>
               <ThemeToggle />
-              <Link href="/login">
+              <Link href="/result-checker">
                 <Button variant="default" size="sm">
-                  Login
+                  results
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -327,7 +327,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section - Apply Now links to Gmail */}
       <section className="py-16 bg-gradient-to-r from-primary-900 to-primary-700 dark:from-primary-950 dark:to-primary-800">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
@@ -336,7 +336,16 @@ export default function AboutPage() {
           <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
             Give your child the gift of quality education at Progress International Group of Schools
           </p>
-          <a href="jj2126924@gmail.com?subject=Admission%20Inquiry&body=Hello%20Progress%20International%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child." target="_blank" rel="noopener noreferrer">
+          <a
+            href="mailto: jj2126924@gmail.com?subject=Admission%20Inquiry&body=Hello%20Progress%20International%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child."
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              e.stopPropagation()
+              window.location.href = `mailto:info@progressschools.edu.ng?subject=Admission%20Inquiry&body=Hello%20Progress%20International%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.`
+            }}
+            className="inline-block"
+          >
             <Button variant="default" size="lg" className="bg-white text-primary-700 hover:bg-gray-100">
               Apply Now
               <ChevronRight className="ml-2 h-5 w-5" />
@@ -344,7 +353,7 @@ export default function AboutPage() {
           </a>
         </div>
       </section>
-
+      
       {/* Footer without Stay Updated */}
       <footer className="bg-gray-900 dark:bg-gray-950 text-white">
         <div className="container mx-auto px-4 py-12">
@@ -400,7 +409,7 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-center space-x-2">
                   <Phone className="h-5 w-5 text-primary-400" />
-                  <span>+234 800 123 4567</span>
+                  <span>07035667900</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <Mail className="h-5 w-5 text-primary-400" />
