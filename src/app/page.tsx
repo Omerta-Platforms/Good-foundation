@@ -474,12 +474,12 @@ export default function HomePage() {
 
           
           
-          <div className="flex flex-col items-center justify-center space-y-3">
+          <div className="flex flex-col items-center justify-center space-y-3 mt-8">
             <Image
               src="/omerta.png"
               alt="origin"
-              width={120}
-              height={40}
+              width={100}
+              height={30}
               className="object-contain"
             />
           </div>
