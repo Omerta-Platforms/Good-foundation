@@ -471,6 +471,17 @@ export default function HomePage() {
             <p>&copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.</p>
             <p className="mt-1">Knowledge for Progress</p>
           </div>
+
+          <div className="flex flex-col items-center justify-center space-y-3">
+            <span>from</span>
+            <Image
+              src="omerta.png"
+              alt="origin"
+              width={120}
+              height={40}
+              className="object-contain"
+            />
+          </div>
         </div>
       </footer>
     </div>
