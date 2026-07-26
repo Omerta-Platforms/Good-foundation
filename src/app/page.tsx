@@ -475,7 +475,6 @@ export default function HomePage() {
           
           
           <div className="flex flex-col items-center justify-center space-y-3">
-            <span>from</span>
             <Image
               src="/omerta.png"
               alt="origin"
