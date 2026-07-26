@@ -400,6 +400,7 @@ export default function HomePage() {
             Enroll your child today and give them the gift of quality education.
           </p>
           <Button
+            
             variant="default"
             size="lg"
             className="bg-white text-primary-700 hover:bg-gray-100"
@@ -475,12 +476,15 @@ export default function HomePage() {
           
           
           <div className="flex flex-col items-center justify-center space-y-3 mt-8">
-            <Image
-              src="/omerta.png"
-              alt="origin"
-              width={100}
-              height={30}
-              className="object-contain"
+            <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
+              made by
+            </div>
+              <Image
+                src="/omerta.png"
+                alt="origin"
+                width={100}
+                height={30}
+                className="object-contain"
             />
           </div>
         </div>
