@@ -472,10 +472,12 @@ export default function HomePage() {
             <p className="mt-1">Knowledge for Progress</p>
           </div>
 
+          
+          
           <div className="flex flex-col items-center justify-center space-y-3">
             <span>from</span>
             <Image
-              src="omerta.png"
+              src="/omerta.png"
               alt="origin"
               width={120}
               height={40}
