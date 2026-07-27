@@ -412,6 +412,19 @@ export default function AboutPage() {
             <p>&copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.</p>
             <p className="mt-1">Knowledge for Progress</p>
           </div>
+
+          <div className="flex flex-col items-center justify-center space-y-3 mt-8">
+            <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
+              made by
+            </div>
+              <Image
+                src="/omerta.png"
+                alt="origin"
+                width={100}
+                height={30}
+                className="object-contain"
+            />
+          </div>
         </div>
       </footer>
     </div>
