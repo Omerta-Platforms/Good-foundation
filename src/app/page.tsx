@@ -475,8 +475,8 @@ export default function HomePage() {
 
           
           
-          <div className="flex flex-col items-center justify-center space-y-3 mt-8">
-            <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
+          <div className="flex flex-col items-center justify-center space-y-3 mt-4">
+            <div className="border-t border-gray-800 mt-4 pt-6 text-center text-sm text-gray-400">
               made by
             </div>
               <Image
