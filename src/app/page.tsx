@@ -14,10 +14,6 @@ import {
   MapPin,
   Phone,
   Mail,
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
   ArrowRight,
   Star,
   Quote,
@@ -432,20 +428,6 @@ export default function HomePage() {
               <p className="text-gray-400 text-sm mb-4">
                 Providing quality education and nurturing future leaders since 2000.
               </p>
-              <div className="flex space-x-3">
-                <Link href="#" className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                  <Facebook className="h-5 w-5" />
-                </Link>
-                <Link href="#" className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                  <Twitter className="h-5 w-5" />
-                </Link>
-                <Link href="#" className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                  <Instagram className="h-5 w-5" />
-                </Link>
-                <Link href="#" className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                  <Youtube className="h-5 w-5" />
-                </Link>
-              </div>
             </div>
 
             {/* Contact */}
