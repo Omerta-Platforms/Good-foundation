@@ -58,6 +58,13 @@ export async function GET(request: Request) {
 // admission_number), so there's no Supabase Auth step here, unlike
 // teachers. Callable by the admin dashboard (admin_session cookie) or
 // a logged-in teacher (Supabase Auth session token).
+//
+// `password` here is NOT a real account password — it's a shared
+// secret the admin/teacher sets so only someone who has it (ideally
+// the student/parent) can view results on the public result checker.
+// It's hashed with Postgres's pgcrypto crypt()/gen_salt('bf') via the
+// hash_student_password RPC, matching the format the
+// check_student_results RPC verifies against.
 export async function POST(request: Request) {
   try {
     const isAdmin = isAdminAuthorized()
@@ -74,13 +81,29 @@ export async function POST(request: Request) {
       }
     }
 
-    const { firstName, lastName, admissionNumber, classId } = await request.json()
+    const { firstName, lastName, admissionNumber, classId, password } = await request.json()
 
-    if (!firstName || !lastName || !admissionNumber || !classId) {
+    if (!firstName || !lastName || !admissionNumber || !classId || !password) {
       return NextResponse.json(
-        { error: 'First name, last name, admission number, and class are required' },
+        { error: 'First name, last name, admission number, class, and password are required' },
         { status: 400 }
       )
+    }
+
+    if (password.length < 4) {
+      return NextResponse.json(
+        { error: 'Password must be at least 4 characters' },
+        { status: 400 }
+      )
+    }
+
+    const { data: hashedPassword, error: hashError } = await supabaseAdmin.rpc('hash_student_password', {
+      p_password: password,
+    })
+
+    if (hashError) {
+      console.error('Error hashing password:', hashError)
+      return NextResponse.json({ error: 'Failed to process password' }, { status: 500 })
     }
 
     const { data: student, error } = await supabaseAdmin
@@ -90,6 +113,7 @@ export async function POST(request: Request) {
         last_name: lastName,
         admission_number: admissionNumber,
         class_id: classId,
+        password: hashedPassword,
       })
       .select()
       .single()
@@ -130,4 +154,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-                                     
+    
