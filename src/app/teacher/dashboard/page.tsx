@@ -103,6 +103,23 @@ interface Result {
   }
 }
 
+// One row per student in the selected class, for the live entry grid.
+// result_id is null until the student has a saved result — the grid
+// shows every student regardless of whether they have one yet, so
+// teachers fill in blanks instead of hunting for missing rows.
+interface GridRow {
+  student_id: string
+  first_name: string
+  last_name: string
+  admission_number: string
+  result_id: string | null
+  ca1: number | ''
+  ca2: number | ''
+  exam_score: number | ''
+  published: boolean
+  dirty: boolean
+}
+
 // Types for Excel imports
 interface ExcelRow {
   first_name: string
@@ -133,10 +150,8 @@ export default function TeacherDashboard() {
   const [selectedTerm, setSelectedTerm] = useState('First Term')
   const [showAddStudent, setShowAddStudent] = useState(false)
   const [showAddSubject, setShowAddSubject] = useState(false)
-  const [showEditResult, setShowEditResult] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [results, setResults] = useState<Result[]>([])
-  const [editingResult, setEditingResult] = useState<Result | null>(null)
   const [newStudent, setNewStudent] = useState({
     first_name: '',
     last_name: '',
@@ -246,6 +261,150 @@ export default function TeacherDashboard() {
       .eq('term', selectedTerm)
 
     setResults(data || [])
+  }
+
+  // Live entry grid: one row per student in the selected class,
+  // pre-filled with any existing result for this subject/session/term
+  // so the teacher can see and edit everything in one table instead
+  // of downloading/uploading a file.
+  const [gridRows, setGridRows] = useState<GridRow[]>([])
+  const [gridLoading, setGridLoading] = useState(false)
+  const [gridSaving, setGridSaving] = useState(false)
+
+  const fetchGrid = async () => {
+    if (!selectedSubject || !selectedClass) return
+    setGridLoading(true)
+    try {
+      const { data: classStudents, error: studentsError } = await supabase
+        .from('students')
+        .select('id, first_name, last_name, admission_number')
+        .eq('class_id', selectedClass)
+        .order('first_name')
+
+      if (studentsError) throw studentsError
+
+      const { data: existingResults, error: resultsError } = await supabase
+        .from('results')
+        .select('id, student_id, ca1, ca2, exam_score, published')
+        .eq('subject_id', selectedSubject)
+        .eq('session', selectedSession)
+        .eq('term', selectedTerm)
+
+      if (resultsError) throw resultsError
+
+      // Keep the plain results list in sync too — it backs the
+      // "Results Uploaded" stat on the dashboard tab.
+      fetchResults()
+
+      const resultsByStudent = new Map(
+        (existingResults || []).map(r => [r.student_id, r])
+      )
+
+      const rows: GridRow[] = (classStudents || []).map(s => {
+        const existing = resultsByStudent.get(s.id)
+        return {
+          student_id: s.id,
+          first_name: s.first_name,
+          last_name: s.last_name,
+          admission_number: s.admission_number,
+          result_id: existing?.id || null,
+          ca1: existing?.ca1 ?? '',
+          ca2: existing?.ca2 ?? '',
+          exam_score: existing?.exam_score ?? '',
+          published: existing?.published || false,
+          dirty: false,
+        }
+      })
+
+      setGridRows(rows)
+    } catch (error: any) {
+      console.error('Error loading grid:', error)
+      toast.error('Failed to load student list')
+    } finally {
+      setGridLoading(false)
+    }
+  }
+
+  const updateGridCell = (studentId: string, field: 'ca1' | 'ca2' | 'exam_score', value: string) => {
+    setGridRows(prev => prev.map(row => {
+      if (row.student_id !== studentId) return row
+      const numValue = value === '' ? '' : Math.max(0, Number(value))
+      return { ...row, [field]: numValue, dirty: true }
+    }))
+  }
+
+  const gridRowTotal = (row: GridRow) => {
+    const ca1 = row.ca1 === '' ? 0 : row.ca1
+    const ca2 = row.ca2 === '' ? 0 : row.ca2
+    const exam = row.exam_score === '' ? 0 : row.exam_score
+    return ca1 + ca2 + exam
+  }
+
+  const handleSaveGrid = async () => {
+    const dirtyRows = gridRows.filter(r => r.dirty)
+    if (dirtyRows.length === 0) {
+      toast('Nothing to save — no scores were changed', { icon: 'ℹ️' })
+      return
+    }
+
+    // Rows with every field still blank aren't a real entry yet —
+    // skip them rather than saving a 0/0/0 result.
+    const rowsToSave = dirtyRows.filter(r => r.ca1 !== '' || r.ca2 !== '' || r.exam_score !== '')
+    if (rowsToSave.length === 0) {
+      toast('Nothing to save — no scores were entered', { icon: 'ℹ️' })
+      return
+    }
+
+    setGridSaving(true)
+    let successCount = 0
+    let errorCount = 0
+
+    for (const row of rowsToSave) {
+      try {
+        const ca1 = row.ca1 === '' ? 0 : row.ca1
+        const ca2 = row.ca2 === '' ? 0 : row.ca2
+        const examScore = row.exam_score === '' ? 0 : row.exam_score
+        const total = ca1 + ca2 + examScore
+        const grade = calculateGrade(total)
+        const remark = getRemark(total)
+
+        if (row.result_id) {
+          const { error } = await supabase
+            .from('results')
+            .update({ ca1, ca2, exam_score: examScore, grade, remark })
+            .eq('id', row.result_id)
+          if (error) throw error
+        } else {
+          const { error } = await supabase.from('results').insert({
+            student_id: row.student_id,
+            subject_id: selectedSubject,
+            ca1,
+            ca2,
+            exam_score: examScore,
+            grade,
+            remark,
+            session: selectedSession,
+            term: selectedTerm,
+            published: false,
+          })
+          if (error) throw error
+        }
+        successCount++
+      } catch (error) {
+        console.error('Error saving result for student:', row.student_id, error)
+        errorCount++
+      }
+    }
+
+    setGridSaving(false)
+
+    if (successCount > 0) {
+      toast.success(`Saved ${successCount} result${successCount === 1 ? '' : 's'}${errorCount > 0 ? `, ${errorCount} failed` : ''}`)
+    } else {
+      toast.error('Failed to save results')
+    }
+
+    fetchGrid()
   }
 
   // 1. ADD STUDENT
@@ -519,7 +678,7 @@ export default function TeacherDashboard() {
         }
 
         toast.success(`Uploaded ${successCount} results${errorCount > 0 ? `, ${errorCount} failed` : ''}`)
-        fetchResults()
+        fetchGrid()
       }
       reader.readAsArrayBuffer(file)
     } catch (error) {
@@ -548,66 +707,10 @@ export default function TeacherDashboard() {
       if (error) throw error
 
       toast.success('Results published successfully! Students can now view them.')
-      fetchResults()
+      fetchGrid()
 
     } catch (error: any) {
       toast.error(error.message || 'Failed to publish results')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // 6. EDIT RESULT
-  const handleEditResult = async () => {
-    if (!editingResult) return
-
-    const totalScore = (editingResult.ca1 || 0) + (editingResult.ca2 || 0) + (editingResult.exam_score || 0)
-
-    setLoading(true)
-    try {
-      const { error } = await supabase
-        .from('results')
-        .update({
-          ca1: editingResult.ca1,
-          ca2: editingResult.ca2,
-          exam_score: editingResult.exam_score,
-          grade: calculateGrade(totalScore),
-          remark: getRemark(totalScore)
-        })
-        .eq('id', editingResult.id)
-
-      if (error) throw error
-
-      toast.success('Result updated successfully!')
-      setShowEditResult(false)
-      setEditingResult(null)
-      fetchResults()
-
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update result')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // 7. DELETE RESULT
-  const handleDeleteResult = async (resultId: string) => {
-    if (!confirm('Are you sure you want to delete this result?')) return
-
-    setLoading(true)
-    try {
-      const { error } = await supabase
-        .from('results')
-        .delete()
-        .eq('id', resultId)
-
-      if (error) throw error
-
-      toast.success('Result deleted successfully!')
-      fetchResults()
-
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete result')
     } finally {
       setLoading(false)
     }
@@ -732,7 +835,7 @@ export default function TeacherDashboard() {
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id)
-                    if (item.id === 'results') fetchResults()
+                    if (item.id === 'results' && selectedSubject) fetchGrid()
                     setSidebarOpen(false)
                   }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
@@ -888,14 +991,14 @@ export default function TeacherDashboard() {
                 >
                   <CardContent className="p-6 text-center">
                     <Upload className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">Upload Results</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Upload Excel results</p>
+                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">Enter Results</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Type in scores or upload Excel</p>
                   </CardContent>
                 </Card>
 
                 <Card 
                   className="hover:shadow-lg transition-shadow cursor-pointer" 
-                  onClick={() => { setActiveTab('results'); handlePublishResults(); }}
+                  onClick={() => setActiveTab('results')}
                 >
                   <CardContent className="p-6 text-center">
                     <CheckCircle className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
@@ -1112,7 +1215,7 @@ export default function TeacherDashboard() {
                           onClick={() => {
                             setSelectedSubject(subject.id)
                             setActiveTab('results')
-                            fetchResults()
+                            fetchGrid()
                           }}
                         >
                           <Eye className="h-4 w-4" />
@@ -1191,7 +1294,7 @@ export default function TeacherDashboard() {
                     value={selectedSubject}
                     onChange={(e) => {
                       setSelectedSubject(e.target.value)
-                      if (e.target.value) fetchResults()
+                      if (e.target.value) fetchGrid()
                     }}
                   >
                     <option value="">Select Subject</option>
@@ -1207,7 +1310,7 @@ export default function TeacherDashboard() {
                     value={selectedSession}
                     onChange={(e) => {
                       setSelectedSession(e.target.value)
-                      if (selectedSubject) fetchResults()
+                      if (selectedSubject) fetchGrid()
                     }}
                   >
                     <option value="2024/2025">2024/2025</option>
@@ -1222,7 +1325,7 @@ export default function TeacherDashboard() {
                     value={selectedTerm}
                     onChange={(e) => {
                       setSelectedTerm(e.target.value)
-                      if (selectedSubject) fetchResults()
+                      if (selectedSubject) fetchGrid()
                     }}
                   >
                     <option value="First Term">First Term</option>
@@ -1230,8 +1333,153 @@ export default function TeacherDashboard() {
                     <option value="Third Term">Third Term</option>
                   </select>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={() => document.getElementById('resultUpload')?.click()}>
+              </div>
+
+              {/* Live Entry Grid */}
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <CardTitle>
+                      {selectedSubject ? subjects.find(s => s.id === selectedSubject)?.name : 'Results'}
+                      {gridRows.length > 0 && ` (${gridRows.length} students)`}
+                    </CardTitle>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => fetchGrid()} disabled={!selectedSubject}>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Refresh
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={handleSaveGrid}
+                        disabled={!selectedSubject || gridSaving || !gridRows.some(r => r.dirty)}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {gridSaving ? 'Saving...' : 'Save All'}
+                      </Button>
+                      <Button variant="success" onClick={handlePublishResults} disabled={loading || !selectedSubject}>
+                        Publish All
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Type scores directly into the table below, then hit Save All. 1st CA and 2nd CA are out of 20, Exam is out of 60.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  {!selectedSubject ? (
+                    <p className="py-8 text-center text-gray-500 dark:text-gray-400">
+                      Select a subject to start entering results.
+                    </p>
+                  ) : gridLoading ? (
+                    <p className="py-8 text-center text-gray-500 dark:text-gray-400">Loading students...</p>
+                  ) : gridRows.length === 0 ? (
+                    <p className="py-8 text-center text-gray-500 dark:text-gray-400">
+                      No students in this class yet.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-gray-200 dark:border-gray-800">
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">#</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Student</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Admission No</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">1st CA</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">2nd CA</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Exam</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Total</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Grade</th>
+                            <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gridRows.map((row, index) => {
+                            const total = gridRowTotal(row)
+                            return (
+                              <tr key={row.student_id} className={`border-b border-gray-100 dark:border-gray-800/50 ${row.dirty ? 'bg-amber-50/50 dark:bg-amber-950/10' : ''}`}>
+                                <td className="py-2 px-4 text-sm text-gray-500 dark:text-gray-400">{index + 1}</td>
+                                <td className="py-2 px-4 text-sm text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                                  {row.first_name} {row.last_name}
+                                </td>
+                                <td className="py-2 px-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                                  {row.admission_number}
+                                </td>
+                                <td className="py-2 px-4">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={20}
+                                    value={row.ca1}
+                                    onChange={(e) => updateGridCell(row.student_id, 'ca1', e.target.value)}
+                                    className="w-16 px-2 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                  />
+                                </td>
+                                <td className="py-2 px-4">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={20}
+                                    value={row.ca2}
+                                    onChange={(e) => updateGridCell(row.student_id, 'ca2', e.target.value)}
+                                    className="w-16 px-2 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                  />
+                                </td>
+                                <td className="py-2 px-4">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={60}
+                                    value={row.exam_score}
+                                    onChange={(e) => updateGridCell(row.student_id, 'exam_score', e.target.value)}
+                                    className="w-16 px-2 py-1 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                  />
+                                </td>
+                                <td className="py-2 px-4 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                  {total}
+                                </td>
+                                <td className="py-2 px-4">
+                                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getGradeColor(calculateGrade(total))}`}>
+                                    {calculateGrade(total)}
+                                  </span>
+                                </td>
+                                <td className="py-2 px-4">
+                                  {row.dirty ? (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                                      Unsaved
+                                    </span>
+                                  ) : row.published ? (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                      Published
+                                    </span>
+                                  ) : row.result_id ? (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                      Draft
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                                      Not entered
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Excel upload — secondary option, mainly for bulk-importing
+                  historic data rather than routine entry */}
+              <details className="text-sm">
+                <summary className="cursor-pointer text-gray-500 dark:text-gray-400 select-none">
+                  Prefer uploading a spreadsheet instead?
+                </summary>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={() => document.getElementById('resultUpload')?.click()} disabled={!selectedSubject}>
                     <Upload className="h-4 w-4 mr-2" />
                     Upload Excel
                   </Button>
@@ -1250,234 +1498,10 @@ export default function TeacherDashboard() {
                     <Download className="h-4 w-4 mr-2" />
                     Template
                   </Button>
-                  <Button variant="success" onClick={handlePublishResults} disabled={loading || !selectedSubject}>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Publish All
-                  </Button>
                 </div>
-              </div>
-
-              {/* Results Table */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>
-                      Results {selectedSubject && subjects.find(s => s.id === selectedSubject)?.name} 
-                      ({results.length} students)
-                    </CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => fetchResults()}>
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Refresh
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Printer className="h-4 w-4 mr-2" />
-                        Print
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-200 dark:border-gray-800">
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">#</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Student</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Admission No</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">1st CA</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">2nd CA</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Exam</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Total</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Grade</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Remark</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
-                          <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {results.map((result, index) => (
-                          <tr key={result.id} className="border-b border-gray-100 dark:border-gray-800/50">
-                            <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400">{index + 1}</td>
-                            <td className="py-3 px-4 text-sm text-gray-800 dark:text-gray-200">
-                              {result.student?.first_name} {result.student?.last_name}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
-                              {result.student?.admission_number}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{result.ca1}</td>
-                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{result.ca2}</td>
-                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{result.exam_score}</td>
-                            <td className="py-3 px-4 text-sm font-semibold text-gray-800 dark:text-gray-200">
-                              {result.score}
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className={`px-3 py-1 text-sm font-semibold rounded-full ${getGradeColor(result.grade)}`}>
-                                {result.grade}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{result.remark}</td>
-                            <td className="py-3 px-4">
-                              <span className={`px-2 py-1 text-xs rounded-full ${
-                                result.published 
-                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                  : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                              }`}>
-                                {result.published ? 'Published' : 'Draft'}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-right">
-                              <div className="flex items-center justify-end space-x-2">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => {
-                                    setEditingResult(result)
-                                    setShowEditResult(true)
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleDeleteResult(result.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                        {results.length === 0 && (
-                          <tr>
-                            <td colSpan={8} className="py-8 text-center text-gray-500 dark:text-gray-400">
-                              {selectedSubject 
-                                ? 'No results found for this subject. Upload results to get started.'
-                                : 'Select a subject to view results.'}
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
+              </details>
 
               {/* Edit Result Modal */}
-              {showEditResult && editingResult && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                  <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                        Edit Result
-                      </h2>
-                      <button 
-                        onClick={() => {
-                          setShowEditResult(false)
-                          setEditingResult(null)
-                        }} 
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-                      >
-                        <X className="h-6 w-6" />
-                      </button>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Student: <span className="font-medium text-gray-800 dark:text-gray-200">
-                            {editingResult.student?.first_name} {editingResult.student?.last_name}
-                          </span>
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Admission: <span className="font-medium text-gray-800 dark:text-gray-200">
-                            {editingResult.student?.admission_number}
-                          </span>
-                        </p>
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            1st CA *
-                          </label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="20"
-                            placeholder="0-20"
-                            value={editingResult.ca1}
-                            onChange={(e) => setEditingResult({
-                              ...editingResult,
-                              ca1: parseInt(e.target.value) || 0
-                            })}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            2nd CA *
-                          </label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="20"
-                            placeholder="0-20"
-                            value={editingResult.ca2}
-                            onChange={(e) => setEditingResult({
-                              ...editingResult,
-                              ca2: parseInt(e.target.value) || 0
-                            })}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Exam *
-                          </label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="60"
-                            placeholder="0-60"
-                            value={editingResult.exam_score}
-                            onChange={(e) => setEditingResult({
-                              ...editingResult,
-                              exam_score: parseInt(e.target.value) || 0
-                            })}
-                          />
-                        </div>
-                      </div>
-                      {(() => {
-                        const total = (editingResult.ca1 || 0) + (editingResult.ca2 || 0) + (editingResult.exam_score || 0)
-                        return (
-                          <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Total: <span className="font-semibold text-gray-800 dark:text-gray-200">{total}/100</span>
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Grade: <span className={`font-semibold ${getGradeColor(calculateGrade(total))}`}>
-                                {calculateGrade(total)}
-                              </span>
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Remark: <span className="font-medium text-gray-800 dark:text-gray-200">
-                                {getRemark(total)}
-                              </span>
-                            </p>
-                          </div>
-                        )
-                      })()}
-                    </div>
-                    <div className="flex justify-end space-x-3 mt-6">
-                      <Button variant="outline" onClick={() => {
-                        setShowEditResult(false)
-                        setEditingResult(null)
-                      }}>Cancel</Button>
-                      <Button onClick={handleEditResult} disabled={loading}>
-                        {loading ? 'Saving...' : 'Save Changes'}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </main>
