@@ -56,7 +56,8 @@ export default function AdminDashboard() {
     first_name: '',
     last_name: '',
     admission_number: '',
-    class_id: ''
+    class_id: '',
+    password: ''
   })
 
   const [newTeacher, setNewTeacher] = useState({
@@ -157,7 +158,7 @@ export default function AdminDashboard() {
 
   // ADD STUDENT - Uses API route (server-side)
   const handleAddStudent = async () => {
-    if (!newStudent.first_name || !newStudent.last_name || !newStudent.admission_number || !newStudent.class_id) {
+    if (!newStudent.first_name || !newStudent.last_name || !newStudent.admission_number || !newStudent.class_id || !newStudent.password) {
       toast.error('Please fill in all required fields')
       return
     }
@@ -174,6 +175,7 @@ export default function AdminDashboard() {
           lastName: newStudent.last_name,
           admissionNumber: newStudent.admission_number,
           classId: newStudent.class_id,
+          password: newStudent.password,
         }),
       })
 
@@ -187,7 +189,7 @@ export default function AdminDashboard() {
 
       toast.success('Student added successfully')
       setShowAddStudent(false)
-      setNewStudent({ first_name: '', last_name: '', admission_number: '', class_id: '' })
+      setNewStudent({ first_name: '', last_name: '', admission_number: '', class_id: '', password: '' })
       fetchData()
 
     } catch (error: any) {
@@ -431,7 +433,7 @@ export default function AdminDashboard() {
                 <span className="text-primary-600 dark:text-primary-400 font-bold text-lg">A</span>
               </div>
               <div>
-                <p className="font-semibold text-gray-800 dark:text-gray-200">Principal</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-200">Admin</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Super Administrator</p>
               </div>
             </div>
@@ -500,6 +502,12 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Bell className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+              </button>
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Settings className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+              </button>
             </div>
           </div>
         </header>
@@ -551,7 +559,7 @@ export default function AdminDashboard() {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setShowAddStudent(true)}>
-                      <CardContent className="p-4 text-center">
+                     <CardContent className="p-4 text-center">
                         <UserPlus className="h-8 w-8 text-primary-600 mx-auto mb-2" />
                         <p className="text-sm font-medium">Add Student</p>
                       </CardContent>
@@ -824,7 +832,11 @@ export default function AdminDashboard() {
                 <option value="">Select Class *</option>
                 {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+              <Input placeholder="Result Checker Password *" value={newStudent.password} onChange={(e) => setNewStudent({...newStudent, password: e.target.value})} />
             </div>
+            <p className="text-xs text-gray-500 mt-2">
+              This password is used only for the public result checker, along with the admission number. Share it privately with the student/parent.
+            </p>
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddStudent(false)}>Cancel</Button>
               <Button onClick={handleAddStudent} disabled={loading}>{loading ? 'Adding...' : 'Add Student'}</Button>
