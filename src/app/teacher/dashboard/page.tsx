@@ -105,14 +105,10 @@ interface Result {
 
 // Types for Excel imports
 interface ExcelRow {
-  email: string
-  password?: string
   first_name: string
   last_name: string
   admission_number: string
-  date_of_birth?: string
-  parent_phone?: string
-  parent_email?: string
+  password: string
 }
 
 interface ResultRow {
@@ -144,7 +140,8 @@ export default function TeacherDashboard() {
   const [newStudent, setNewStudent] = useState({
     first_name: '',
     last_name: '',
-    admission_number: ''
+    admission_number: '',
+    password: ''
   })
   const [newSubject, setNewSubject] = useState({
     name: '',
@@ -256,7 +253,7 @@ export default function TeacherDashboard() {
   // looked up by admission_number, is used), so this is a plain table
   // insert via /api/students — no Supabase Auth account is created.
   const handleAddStudent = async () => {
-    if (!newStudent.first_name || !newStudent.last_name || !newStudent.admission_number) {
+    if (!newStudent.first_name || !newStudent.last_name || !newStudent.admission_number || !newStudent.password) {
       toast.error('Please fill in all required fields')
       return
     }
@@ -286,6 +283,7 @@ export default function TeacherDashboard() {
           lastName: newStudent.last_name,
           admissionNumber: newStudent.admission_number,
           classId: selectedClass,
+          password: newStudent.password,
         }),
       })
 
@@ -300,7 +298,8 @@ export default function TeacherDashboard() {
       setNewStudent({
         first_name: '',
         last_name: '',
-        admission_number: ''
+        admission_number: '',
+        password: ''
       })
       fetchStudents(selectedClass)
 
@@ -336,6 +335,12 @@ export default function TeacherDashboard() {
 
         for (const row of jsonData) {
           try {
+            if (!row.password) {
+              errorCount++
+              console.error('Missing password for row:', row)
+              continue
+            }
+
             const response = await fetch('/api/students', {
               method: 'POST',
               headers: {
@@ -347,6 +352,7 @@ export default function TeacherDashboard() {
                 lastName: row.last_name,
                 admissionNumber: row.admission_number,
                 classId: selectedClass,
+                password: row.password,
               }),
             })
 
@@ -610,7 +616,9 @@ export default function TeacherDashboard() {
   // 8. DOWNLOAD RESULT TEMPLATE
   const downloadResultTemplate = () => {
     const template = [
-      { admission_number: "", ca1: "", ca2: "", exam_score:  "" }
+      { admission_number: 'PIS/24/0001', ca1: 18, ca2: 17, exam_score: 55 },
+      { admission_number: 'PIS/24/0002', ca1: 15, ca2: 14, exam_score: 48 },
+      { admission_number: 'PIS/24/0003', ca1: 12, ca2: 13, exam_score: 40 }
     ]
     
     const ws = XLSX.utils.json_to_sheet(template)
@@ -678,7 +686,7 @@ export default function TeacherDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                 <span className="text-white font-bold text-sm">PI</span>
+                  <span className="text-white font-bold text-sm">PI</span>
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Teacher Portal</h2>
@@ -1049,6 +1057,17 @@ export default function TeacherDashboard() {
                           value={newStudent.admission_number}
                           onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})}
                         />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Result Checker Password *</label>
+                        <Input
+                          placeholder="Password for checking results"
+                          value={newStudent.password}
+                          onChange={(e) => setNewStudent({...newStudent, password: e.target.value})}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Share this privately with the student/parent — needed alongside the admission number on the public result checker.
+                        </p>
                       </div>
                     </div>
                     <div className="flex justify-end space-x-3 mt-6">
@@ -1434,7 +1453,7 @@ export default function TeacherDashboard() {
                               Total: <span className="font-semibold text-gray-800 dark:text-gray-200">{total}/100</span>
                             </p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                             Grade: <span className={`font-semibold ${getGradeColor(calculateGrade(total))}`}>
+                              Grade: <span className={`font-semibold ${getGradeColor(calculateGrade(total))}`}>
                                 {calculateGrade(total)}
                               </span>
                             </p>
