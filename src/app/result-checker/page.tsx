@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { 
   Search, 
   Download, 
   Printer, 
   GraduationCap,
   User,
+  Lock,
   Calendar,
   BookOpen,
   CheckCircle,
@@ -43,6 +43,7 @@ interface CheckedResult {
 
 export default function ResultCheckerPage() {
   const [admissionNumber, setAdmissionNumber] = useState('')
+  const [password, setPassword] = useState('')
   const [session, setSession] = useState('')
   const [term, setTerm] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -55,7 +56,7 @@ export default function ResultCheckerPage() {
     setError('')
     setResult(null)
 
-    if (!admissionNumber || !session || !term) {
+    if (!admissionNumber || !password || !session || !term) {
       setError('Please fill in all fields')
       setIsLoading(false)
       return
@@ -64,13 +65,19 @@ export default function ResultCheckerPage() {
     try {
       const { data, error: rpcError } = await supabase.rpc('check_student_results', {
         p_admission_number: admissionNumber.trim(),
+        p_password: password,
         p_session: session,
         p_term: term,
       })
 
       if (rpcError) {
-        console.error('Result checker error:', rpcError)
-        setError('Something went wrong. Please try again.')
+        // The RPC raises a generic "Invalid admission number or
+        // password" exception for both a wrong password and an
+        // unknown admission number, so this message is safe to show
+        // as-is without leaking which one was wrong.
+        setError(rpcError.message.includes('Invalid admission number')
+          ? 'Invalid admission number or password.'
+          : 'Something went wrong. Please try again.')
         return
       }
 
@@ -214,7 +221,7 @@ export default function ResultCheckerPage() {
           <Card className="mb-8">
             <CardContent className="p-6">
               <form onSubmit={handleCheckResult} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Admission Number
@@ -231,6 +238,24 @@ export default function ResultCheckerPage() {
                       />
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                      <Input
+                        type="password"
+                        placeholder="Password given by your school"
+                        className="pl-10"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Academic Session
@@ -431,7 +456,7 @@ export default function ResultCheckerPage() {
                 </Card>
 
                 <Card>
-                  <CardContent className="p-4">
+                 <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Class Position</p>
@@ -484,19 +509,6 @@ export default function ResultCheckerPage() {
           </p>
           <p className="text-xs text-gray-500 mt-1">Knowledge for Progress</p>
         </div>
-
-        <div className="flex flex-col items-center justify-center space-y-3 mt-4">
-            <div className="border-t border-gray-800 mt-4 pt-6 text-center text-sm text-gray-400">
-              powered by
-            </div>
-              <Image
-                src="/omerta.png"
-                alt="origin"
-                width={100}
-                height={30}
-                className="object-contain"
-            />
-          </div>
       </footer>
     </div>
   )
