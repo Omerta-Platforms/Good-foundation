@@ -31,11 +31,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const managementTeam = [
-  { name: 'Mr. Michael Obala', position: 'Principal', image: '/images/principal.jpg' },
-  { name: 'Mr. Stephen', position: 'Vice Principal (Academics)', image: '/images/vp-academics.jpg' },
-  { name: 'Mrs. Ruth Sunday', position: 'Head of Academics', image: '/images/head-academics.jpg' },
-  { name: 'Mr. Audu Ejeh', position: 'Technical Designer', image: '/images/head-admin.jpg' },
-  { name: 'Mr. Joshua Oghene-Tega', position: 'Head of Students Affairs', image: '/images/head-students.jpg' },
+  { name: 'Mr. nill', position: 'Principal', image: '/images/principal.jpg' },
+  { name: 'Mr. nill', position: 'Vice Principal (Academics)', image: '/images/vp-academics.jpg' },
+  { name: 'Mrs. nill', position: 'Head of Academics', image: '/images/head-academics.jpg' },
+  { name: 'Mr. nill', position: 'Technical Designer', image: '/images/head-admin.jpg' },
+  { name: 'Mr. nill', position: 'Head of Students Affairs', image: '/images/head-students.jpg' },
 ]
 
 const coreValues = [
