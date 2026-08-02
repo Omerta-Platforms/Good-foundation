@@ -1152,7 +1152,7 @@ export default function TeacherDashboard() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Admission Number *</label>
                         <Input
-                          placeholder="PIS/24/0001"
+                          placeholder="GFI/24/0001"
                           value={newStudent.admission_number}
                           onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})}
                         />
