@@ -113,7 +113,7 @@ export async function POST(request: Request) {
         last_name: lastName,
         admission_number: admissionNumber,
         class_id: classId,
-        password: hashedPassword,
+        password_hash: hashedPassword,
       })
       .select()
       .single()
@@ -154,4 +154,5 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-    
+
+      
