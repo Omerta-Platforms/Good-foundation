@@ -78,7 +78,7 @@ export default function StaffLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-950 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-milk dark:bg-gray-950 flex items-center justify-center p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
@@ -87,10 +87,10 @@ export default function StaffLoginPage() {
         <Card className="shadow-2xl">
           <CardContent className="p-8">
             <div className="text-center mb-8">
-              <div className="inline-flex p-3 bg-green-100 dark:bg-green-950 rounded-full mb-4">
-                <Users className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <div className="inline-flex p-3 bg-primary-50 dark:bg-primary-950 rounded-full mb-4">
+                <Users className="h-8 w-8 text-primary-600 dark:text-primary-400" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+              <h1 className="font-display text-2xl font-semibold text-ink dark:text-gray-200">
                 Staff Login
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -107,7 +107,7 @@ export default function StaffLoginPage() {
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                   <Input
                     type="email"
-                    placeholder="teacher@progress.edu"
+                    placeholder="teacher@goodfoundation.edu"
                     className="pl-10"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -144,7 +144,7 @@ export default function StaffLoginPage() {
                 type="submit"
                 variant="default"
                 size="lg"
-                className="w-full bg-green-600 hover:bg-green-700"
+                className="w-full"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -167,7 +167,7 @@ export default function StaffLoginPage() {
               </p>
               <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <span className="font-medium">Email:</span> teacher@progress.edu
+                  <span className="font-medium">Email:</span> teacher@goodfoundation.edu
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   <span className="font-medium">Password:</span> password123
