@@ -46,7 +46,7 @@ const coreValues = [
 ]
 
 const milestones = [
-  { year: '2000', title: 'Foundation', description: 'Progress International School was established with 50 students' },
+  { year: '2000', title: 'Foundation', description: 'Good Foundation School was established with 50 students' },
   { year: '2005', title: 'Expansion', description: 'Expanded to include secondary education and new campus' },
   { year: '2010', title: 'Recognition', description: 'Awarded Best Private School in Lafia' },
   { year: '2015', title: 'Technology Integration', description: 'Introduced smart classrooms and digital learning' },
@@ -62,12 +62,12 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PI</span>
+              <div className="w-10 h-10 bg-ink dark:bg-gray-50 rounded-full flex items-center justify-center">
+                <span className="text-milk dark:text-gray-950 font-display font-semibold text-sm">GF</span>
               </div>
               <div>
-                <h1 className="text-lg font-bold text-primary-700 dark:text-primary-400">
-                  Progress International
+                <h1 className="font-display text-lg font-semibold text-ink dark:text-gray-50">
+                  Good Foundation
                 </h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Group of Schools</p>
               </div>
@@ -92,13 +92,14 @@ export default function AboutPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-primary-900 to-primary-700 dark:from-primary-950 dark:to-primary-800 py-20">
+      <section className="relative bg-ink dark:bg-gray-950 py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              About Progress International
+            <p className="text-xs tracking-[0.2em] uppercase text-primary-400 mb-4">Since 2000</p>
+            <h1 className="font-display text-4xl md:text-5xl font-semibold text-milk mb-4">
+              About Good Foundation
             </h1>
-            <p className="text-xl text-primary-100">
+            <p className="text-xl text-gray-400 font-light">
               Committed to excellence in education and holistic development since 2000
             </p>
           </div>
@@ -109,12 +110,12 @@ export default function AboutPage() {
       <section className="py-16 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 text-center mb-8">
+            <h2 className="font-display text-3xl font-semibold text-ink dark:text-gray-200 text-center mb-8">
               Our History
             </h2>
             <div className="prose prose-lg dark:prose-invert max-w-none">
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                Progress International Group of Schools was founded in the year 2000 with a vision to provide 
+                Good Foundation Group of Schools was founded in the year 2000 with a vision to provide 
                 world-class education to the children of Lafia and its environs. What started as a small 
                 nursery school with just 50 students has grown into a comprehensive educational institution 
                 offering education from preschool through secondary school.
@@ -161,7 +162,7 @@ export default function AboutPage() {
                   <div className="p-3 bg-primary-50 dark:bg-primary-950 rounded-full">
                     <Target className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Our Mission</h2>
+                  <h2 className="font-display text-2xl font-semibold text-ink dark:text-gray-200">Our Mission</h2>
                 </div>
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   To provide a nurturing and challenging educational environment that fosters academic excellence, 
@@ -176,7 +177,7 @@ export default function AboutPage() {
                   <div className="p-3 bg-primary-50 dark:bg-primary-950 rounded-full">
                     <Eye className="h-6 w-6 text-primary-600 dark:text-primary-400" />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Our Vision</h2>
+                  <h2 className="font-display text-2xl font-semibold text-ink dark:text-gray-200">Our Vision</h2>
                 </div>
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   To be a world-class educational institution that produces exceptional leaders and innovators 
@@ -191,7 +192,7 @@ export default function AboutPage() {
       {/* Core Values */}
       <section className="py-16 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 text-center mb-12">
+          <h2 className="font-display text-3xl font-semibold text-ink dark:text-gray-200 text-center mb-12">
             Our Core Values
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
@@ -220,7 +221,7 @@ export default function AboutPage() {
       {/* Management Team */}
       <section className="py-16 bg-gray-50 dark:bg-gray-950">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 text-center mb-4">
+          <h2 className="font-display text-3xl font-semibold text-ink dark:text-gray-200 text-center mb-4">
             Management Team
           </h2>
           <p className="text-center text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
@@ -249,8 +250,8 @@ export default function AboutPage() {
       {/* Why Choose Us */}
       <section className="py-16 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 text-center mb-12">
-            Why Choose Progress International?
+          <h2 className="font-display text-3xl font-semibold text-ink dark:text-gray-200 text-center mb-12">
+            Why Choose Good Foundation?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <Card>
@@ -329,25 +330,25 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section - Apply Now links to Gmail */}
-      <section className="py-16 bg-gradient-to-r from-primary-900 to-primary-700 dark:from-primary-950 dark:to-primary-800">
+      <section className="py-16 bg-ink dark:bg-gray-950">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="font-display text-3xl font-semibold text-milk mb-4">
             Join Our Community
           </h2>
-          <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
-            Give your child the gift of quality education at Progress International Group of Schools
+          <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto font-light">
+            Give your child the gift of quality education at Good Foundation Group of Schools
           </p>
           <a
-            href="mailto: jj2126924@gmail.com?subject=Admission%20Inquiry&body=Hello%20Progress%20International%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child."
+            href="mailto: jj2126924@gmail.com?subject=Admission%20Inquiry&body=Hello%20Good%20Foundation%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child."
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => {
               e.stopPropagation()
-              window.location.href = `mailto:info@progressschools.edu.ng?subject=Admission%20Inquiry&body=Hello%20Progress%20International%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.`
+              window.location.href = `mailto:info@progressschools.edu.ng?subject=Admission%20Inquiry&body=Hello%20Good%20Foundation%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.`
             }}
             className="inline-block"
           >
-            <Button variant="default" size="lg" className="bg-white text-primary-700 hover:bg-gray-100">
+            <Button variant="default" size="lg">
               Apply Now
               <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
@@ -362,11 +363,11 @@ export default function AboutPage() {
             {/* About */}
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <span className="font-bold text-white">PI</span>
+                <div className="w-10 h-10 bg-milk rounded-full flex items-center justify-center">
+                  <span className="font-display font-semibold text-ink">GF</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">Progress International</h3>
+                  <h3 className="font-display font-semibold text-lg">Good Foundation</h3>
                   <p className="text-sm text-gray-400">Group of Schools</p>
                 </div>
               </div>
@@ -410,7 +411,7 @@ export default function AboutPage() {
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Good Foundation Group of Schools. All rights reserved.</p>
             <p className="mt-1">Knowledge for Progress</p>
           </div>
 
