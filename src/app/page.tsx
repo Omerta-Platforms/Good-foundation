@@ -26,28 +26,28 @@ import { formatDate } from '@/lib/utils'
 const latestNews = [
   {
     id: 1,
-    title: '2024 Academic Session Commences',
-    date: '2024-01-15',
-    excerpt: 'The 2024 academic session has officially begun with full enrollment across all classes.'
+    title: '2026 Academic Session Commences',
+    date: '2026-01-15',
+    excerpt: 'The 2026 academic session has officially begun with full enrollment across all classes.'
   },
   {
     id: 2,
-    title: 'Science Fair 2024',
-    date: '2024-02-01',
+    title: 'Science Fair 2026',
+    date: '2026-10-01',
     excerpt: 'Students showcase innovative projects at the annual Science Fair competition.'
   },
   {
     id: 3,
     title: 'Sports Day Announcement',
-    date: '2024-02-15',
+    date: '2026-10-15',
     excerpt: 'Annual inter-house sports competition scheduled for March 15th, 2024.'
   }
 ]
 
 const upcomingEvents = [
-  { id: 1, title: 'Parent-Teacher Meeting', date: '2024-03-10' },
-  { id: 2, title: 'Mid-Term Break', date: '2024-03-20' },
-  { id: 3, title: 'Examination Week', date: '2024-04-01' }
+  { id: 1, title: 'Parent-Teacher Meeting', date: '2026-10-10' },
+  { id: 2, title: 'Mid-Term Break', date: '2026-10-20' },
+  { id: 3, title: 'Examination Week', date: '2026-11-01' }
 ]
 
 const quickLinks = [
