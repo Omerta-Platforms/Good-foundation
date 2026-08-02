@@ -30,15 +30,15 @@ export async function generateReportCard(data: ReportCardData): Promise<Uint8Arr
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
-  const primaryColor = rgb(0.15, 0.23, 0.6)
-  const grayColor = rgb(0.42, 0.45, 0.5)
-  const lightGray = rgb(0.9, 0.91, 0.93)
-  const black = rgb(0.1, 0.1, 0.12)
+  const primaryColor = rgb(0.69, 0.55, 0.34)
+  const grayColor = rgb(0.42, 0.4, 0.36)
+  const lightGray = rgb(0.93, 0.92, 0.87)
+  const black = rgb(0.08, 0.07, 0.07)
 
   let y = height - 50
 
   // Header
-  page.drawText('Progress International Group of Schools', {
+  page.drawText('Good Foundation Group of Schools', {
     x: 50,
     y,
     size: 18,
@@ -160,4 +160,5 @@ export function downloadPdfBytes(bytes: Uint8Array, filename: string) {
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
+
     
