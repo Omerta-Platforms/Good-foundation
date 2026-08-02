@@ -417,12 +417,12 @@ export default function AdminDashboard() {
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PI</span>
+              <div className="w-10 h-10 bg-ink dark:bg-gray-50 rounded-full flex items-center justify-center">
+                <span className="text-milk dark:text-gray-950 font-display font-semibold text-sm">GF</span>
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Admin Portal</h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Progress International</p>
+                <h2 className="font-display text-lg font-semibold text-ink dark:text-gray-200">Admin Portal</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Good Foundation</p>
               </div>
             </div>
           </div>
