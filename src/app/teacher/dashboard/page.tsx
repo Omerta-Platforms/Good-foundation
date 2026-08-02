@@ -1309,7 +1309,7 @@ export default function TeacherDashboard() {
                       if (selectedSubject) fetchGrid()
                     }}
                   >
-                    <option value="2024/2025">2026/2027</option>
+                    <option value="2026/2027">2026/2027</option>
                   </select>
                 </div>
                 <div className="flex-1 min-w-[150px]">
