@@ -189,7 +189,7 @@ export default function HomePage() {
                       your child at Good Foundation.
                     </p>
                     <p className="mt-4 font-semibold text-ink dark:text-gray-200">
-                      - Mr Michael Obala
+                      - Mr Audu Ejeh 
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Principal</p>
                   </div>
