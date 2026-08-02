@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-ink dark:bg-gray-950 flex items-center justify-center p-4">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
@@ -66,10 +66,10 @@ export default function AdminLoginPage() {
         <Card className="shadow-2xl">
           <CardContent className="p-8">
             <div className="text-center mb-8">
-              <div className="inline-flex p-3 bg-purple-100 dark:bg-purple-950 rounded-full mb-4">
-                <Shield className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+              <div className="inline-flex p-3 bg-primary-50 dark:bg-primary-950 rounded-full mb-4">
+                <Shield className="h-8 w-8 text-primary-600 dark:text-primary-400" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+              <h1 className="font-display text-2xl font-semibold text-ink dark:text-gray-200">
                 Admin Login
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -106,7 +106,7 @@ export default function AdminLoginPage() {
                 type="submit"
                 variant="default"
                 size="lg"
-                className="w-full bg-purple-600 hover:bg-purple-700"
+                className="w-full"
                 disabled={isLoading}
               >
                 {isLoading ? (
