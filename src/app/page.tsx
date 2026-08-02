@@ -1,28 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { 
-  Calendar, 
-  ChevronRight, 
-  Clock, 
-  GraduationCap, 
-  BookOpen, 
-  Users, 
+import {
+  Calendar,
+  ChevronRight,
+  GraduationCap,
+  BookOpen,
+  Users,
   Award,
   MapPin,
   Phone,
   Mail,
   ArrowRight,
-  Star,
   Quote,
-  Building2,
   UserCircle,
-  FileText,
-  CheckCircle,
-  PlayCircle,
-  ExternalLink
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -62,59 +55,32 @@ const quickLinks = [
 ]
 
 export default function HomePage() {
-  const [currentSlide, setCurrentSlide] = useState(0)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
-  // Auto-rotate hero slides
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const heroSlides = [
-    {
-      title: 'Excellence in Education',
-      subtitle: 'Nurturing the leaders of tomorrow',
-      image: '/images/hero1.jpg'
-    },
-    {
-      title: 'Progress International Group of Schools',
-      subtitle: 'Knowledge for Progress',
-      image: '/images/hero2.jpg'
-    },
-    {
-      title: 'Empowering Young Minds',
-      subtitle: 'Building a brighter future',
-      image: '/images/hero3.jpg'
-    }
-  ]
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-milk dark:bg-gray-950">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-milk/95 dark:bg-gray-950/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="relative w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">PI</span>
+              <div className="relative w-11 h-11 bg-ink dark:bg-gray-50 rounded-full flex items-center justify-center">
+                <span className="text-milk dark:text-gray-950 font-display font-semibold text-base">GF</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-primary-700 dark:text-primary-400 leading-tight">
-                  Progress International
+                <h1 className="font-display text-xl font-semibold text-ink dark:text-gray-50 leading-tight tracking-tight">
+                  Good Foundation
                 </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Group of Schools</p>
+                <p className="text-xs tracking-wide uppercase text-gray-500 dark:text-gray-400">Group of Schools</p>
               </div>
             </Link>
 
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Home</Link>
-              <Link href="/about" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">About</Link>
-              <Link href="/admissions" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Admissions</Link>
-              <Link href="/contact" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Contact</Link>
-              <Link href="/result-checker" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Check Results</Link>
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Home</Link>
+              <Link href="/about" className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">About</Link>
+              <Link href="/admissions" className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Admissions</Link>
+              <Link href="/contact" className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Contact</Link>
+              <Link href="/result-checker" className="text-sm text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Check Results</Link>
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -130,94 +96,99 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-20 relative overflow-hidden">
-        <div className="relative h-[600px] bg-gradient-to-r from-primary-900 to-primary-700 dark:from-primary-950 dark:to-primary-800">
-          {heroSlides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
-            >
-              <div className="absolute inset-0 bg-black/50" />
-              <div className="relative container mx-auto px-4 h-full flex items-center">
-                <div className="max-w-3xl">
-                  <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
-                    {slide.title}
-                  </h1>
-                  <p className="text-xl text-gray-200 mb-8">{slide.subtitle}</p>
-                  <div className="flex flex-wrap gap-4">
-                    <Link href="/result-checker">
-                      <Button variant="default" size="lg" className="bg-white text-primary-700 hover:bg-gray-100">
-                        Results
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
-                    </Link>
-                    <Link href="/about">
-                      <Button variant="outline" size="lg" className="text-white border-white hover:bg-white/20">
-                        Learn More
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
+      {/* Hero — split panel: wordmark on milk, seal on ink */}
+      <section className="pt-20">
+        <div className="grid md:grid-cols-2 min-h-[560px]">
+          <div className="flex items-center px-6 md:px-16 py-16 bg-milk dark:bg-gray-950">
+            <div className="max-w-lg">
+              <p className="text-xs tracking-[0.2em] uppercase text-primary-600 dark:text-primary-400 mb-5">
+                Est. 2000 &middot; Lafia, Nasarawa State
+              </p>
+              <h1 className="font-display text-5xl md:text-6xl font-semibold text-ink dark:text-gray-50 leading-[1.05] mb-6">
+                Good Foundation
+                <br />
+                Group of Schools
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-9 font-light">
+                Knowledge for Progress — a rigorous, values-led education for every child who walks through our gates.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link href="/result-checker">
+                  <Button variant="default" size="lg">
+                    Check Results
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="/about">
+                  <Button variant="outline" size="lg">
+                    Learn More
+                  </Button>
+                </Link>
               </div>
             </div>
-          ))}
+          </div>
 
-          {/* Slide indicators */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-            {heroSlides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  index === currentSlide ? 'bg-white' : 'bg-white/50'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
+          {/* Signature element: engraved seal on ink panel, standing in for a photograph */}
+          <div className="relative bg-ink dark:bg-gray-900 flex items-center justify-center py-16 px-10 overflow-hidden">
+            <div
+              className="absolute inset-0 opacity-[0.06]"
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(135deg, #F7F5F0 0px, #F7F5F0 1px, transparent 1px, transparent 28px)',
+              }}
+            />
+            <div className="relative flex flex-col items-center text-center">
+              <div className="w-40 h-40 md:w-48 md:h-48 rounded-full border border-primary-400/60 flex items-center justify-center mb-8">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border border-primary-400/40 flex items-center justify-center">
+                  <span className="font-display text-5xl md:text-6xl text-milk">GF</span>
+                </div>
+              </div>
+              <p className="text-primary-300 text-xs tracking-[0.3em] uppercase mb-2">Excellence &middot; Integrity &middot; Leadership</p>
+              <p className="text-gray-400 text-sm max-w-xs">
+                Nurturing the leaders of tomorrow, one foundation at a time.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* School Motto & Welcome */}
-      <section className="py-16 bg-white dark:bg-gray-900">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center justify-center p-3 bg-primary-50 dark:bg-primary-950 rounded-full mb-6">
-              <Quote className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+              <Quote className="h-7 w-7 text-primary-600 dark:text-primary-400" />
             </div>
-            <h2 className="text-4xl font-bold text-primary-700 dark:text-primary-400 mb-4">
+            <h2 className="font-display text-4xl font-semibold text-ink dark:text-gray-50 mb-4">
               Knowledge for Progress
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 font-light">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-10 font-light italic">
               &ldquo;Empowering the next generation with excellence, integrity, and leadership&rdquo;
             </p>
-            
+
             <Card className="text-left">
               <CardContent className="p-8">
-                <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+                <h3 className="font-display text-2xl font-semibold text-ink dark:text-gray-100 mb-4">
                   Principal&apos;s Welcome Message
                 </h3>
                 <div className="flex items-start space-x-6">
                   <div className="flex-shrink-0">
-                    <div className="w-24 h-24 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center">
+                    <div className="w-24 h-24 bg-primary-50 dark:bg-primary-950 rounded-full flex items-center justify-center">
                       <UserCircle className="h-16 w-16 text-primary-600 dark:text-primary-400" />
                     </div>
                   </div>
                   <div>
                     <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-4">
-                      Welcome to Progress International Group of Schools, where we nurture young minds 
-                      and prepare them for excellence in a rapidly changing world. Our commitment to 
-                      holistic education ensures that every student develops academically, socially, 
+                      Welcome to Good Foundation Group of Schools, where we nurture young minds
+                      and prepare them for excellence in a rapidly changing world. Our commitment to
+                      holistic education ensures that every student develops academically, socially,
                       and spiritually.
                     </p>
                     <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                      We invite you to explore our website and discover the opportunities that await 
-                      your child at Progress International.
+                      We invite you to explore our website and discover the opportunities that await
+                      your child at Good Foundation.
                     </p>
-                    <p className="mt-4 font-semibold text-gray-800 dark:text-gray-200">
+                    <p className="mt-4 font-semibold text-ink dark:text-gray-200">
                       - Mr Michael Obala
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Principal</p>
@@ -243,8 +214,8 @@ export default function HomePage() {
               return (
                 <Card key={index}>
                   <CardContent className="p-6 text-center">
-                    <Icon className="h-10 w-10 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
-                    <p className="text-3xl font-bold text-gray-800 dark:text-gray-200">{stat.value}</p>
+                    <Icon className="h-9 w-9 text-primary-600 dark:text-primary-400 mx-auto mb-3" />
+                    <p className="font-display text-3xl font-semibold text-ink dark:text-gray-200">{stat.value}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
                   </CardContent>
                 </Card>
@@ -255,13 +226,13 @@ export default function HomePage() {
       </section>
 
       {/* Latest News & Events */}
-      <section className="py-16 bg-white dark:bg-gray-900">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+            <h2 className="font-display text-3xl font-semibold text-ink dark:text-gray-200">
               Latest News &amp; Events
             </h2>
-            <Link href="#" className="text-primary-600 dark:text-primary-400 hover:underline flex items-center">
+            <Link href="#" className="text-sm text-primary-600 dark:text-primary-400 hover:underline flex items-center">
               View All
               <ChevronRight className="ml-1 h-4 w-4" />
             </Link>
@@ -276,7 +247,7 @@ export default function HomePage() {
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                          <h3 className="text-lg font-semibold text-ink dark:text-gray-200 mb-2">
                             {news.title}
                           </h3>
                           <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
@@ -301,7 +272,7 @@ export default function HomePage() {
             <div>
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center">
+                  <h3 className="text-lg font-semibold text-ink dark:text-gray-200 mb-4 flex items-center">
                     <Calendar className="h-5 w-5 mr-2 text-primary-600 dark:text-primary-400" />
                     Upcoming Events
                   </h3>
@@ -317,7 +288,7 @@ export default function HomePage() {
                           </span>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                          <p className="text-sm font-medium text-ink dark:text-gray-200">
                             {event.title}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -337,7 +308,7 @@ export default function HomePage() {
       {/* Quick Links */}
       <section className="py-16 bg-gray-50 dark:bg-gray-950">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 text-center mb-8">
+          <h2 className="font-display text-3xl font-semibold text-ink dark:text-gray-200 text-center mb-8">
             Quick Links
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-1 gap-6 max-w-md mx-auto">
@@ -363,16 +334,16 @@ export default function HomePage() {
       </section>
 
       {/* Gallery Preview */}
-      <section className="py-16 bg-white dark:bg-gray-900">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 text-center mb-8">
+          <h2 className="font-display text-3xl font-semibold text-ink dark:text-gray-200 text-center mb-8">
             School Gallery
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="relative aspect-video bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                className="relative aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => setSelectedImage(`/images/gallery${i}.jpg`)}
               >
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-transparent to-black/30">
@@ -387,21 +358,19 @@ export default function HomePage() {
       </section>
 
       {/* Admissions CTA */}
-      <section className="py-16 bg-gradient-to-r from-primary-900 to-primary-700 dark:from-primary-950 dark:to-primary-800">
+      <section className="py-20 bg-ink dark:bg-gray-950">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Join Progress International?
+          <h2 className="font-display text-3xl font-semibold text-milk mb-4">
+            Ready to Join Good Foundation?
           </h2>
-          <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto font-light">
             Enroll your child today and give them the gift of quality education.
           </p>
           <Button
-            
             variant="default"
             size="lg"
-            className="bg-white text-primary-700 hover:bg-gray-100"
             onClick={() => {
-              window.location.href = 'mailto:info@progressschools.edu.ng?subject=Admission%20Inquiry&body=Hello%20Progress%20International%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.'
+              window.location.href = 'mailto:info@progressschools.edu.ng?subject=Admission%20Inquiry&body=Hello%20Good%20Foundation%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.'
             }}
           >
             Apply Now
@@ -411,17 +380,17 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 dark:bg-gray-950 text-white">
+      <footer className="bg-gray-950 text-white">
         <div className="container mx-auto px-4 py-12">
           <div className="grid md:grid-cols-4 gap-8">
             {/* About */}
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <span className="font-bold text-white">PI</span>
+                <div className="w-10 h-10 bg-milk rounded-full flex items-center justify-center">
+                  <span className="font-display font-semibold text-ink">GF</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">Progress International</h3>
+                  <h3 className="font-display font-semibold text-lg">Good Foundation</h3>
                   <p className="text-sm text-gray-400">Group of Schools</p>
                 </div>
               </div>
@@ -451,12 +420,10 @@ export default function HomePage() {
          </div>
 
           <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Good Foundation Group of Schools. All rights reserved.</p>
             <p className="mt-1">Knowledge for Progress</p>
           </div>
 
-          
-          
           <div className="flex flex-col items-center justify-center space-y-3 mt-4">
             <div className="border-t border-gray-800 mt-4 pt-6 text-center text-sm text-gray-400">
               powered by
