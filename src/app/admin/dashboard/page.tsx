@@ -743,7 +743,7 @@ export default function AdminDashboard() {
                       {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                     <Input
-                      placeholder="Session (e.g. 2024/2025)"
+                      placeholder="Session (e.g. 2026/2027)"
                       value={positionsSession}
                       onChange={(e) => setPositionsSession(e.target.value)}
                     />
