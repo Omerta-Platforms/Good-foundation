@@ -7,8 +7,7 @@ import {
   Users, 
   GraduationCap, 
   BookOpen, 
-  BarChart3,
-  Bell, 
+  BarChart3, 
   Home,
   LogOut,
   Menu,
@@ -22,8 +21,7 @@ import {
   AlertCircle,
   UserPlus,
   ClipboardList,
-  CreditCard,
-  Settings
+  CreditCard
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -502,12 +500,6 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                <Bell className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-              </button>
-              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                <Settings className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-              </button>
             </div>
           </div>
         </header>
