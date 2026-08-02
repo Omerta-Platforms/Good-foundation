@@ -7,8 +7,7 @@ import {
   Users, 
   GraduationCap, 
   BookOpen, 
-  BarChart3,
-  Bell, 
+  BarChart3, 
   Download,
   Eye,
   Edit,
@@ -891,9 +890,6 @@ export default function TeacherDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <Bell className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-              </button>
             </div>
           </div>
         </header>
