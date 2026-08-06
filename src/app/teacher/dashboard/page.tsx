@@ -7,7 +7,7 @@ import {
   Users, 
   GraduationCap, 
   BookOpen, 
-  BarChart3, 
+  BarChart3,
   Download,
   Eye,
   Edit,
@@ -134,6 +134,13 @@ interface ResultRow {
   exam_score: number
 }
 
+interface AcademicSession {
+  id: string
+  name: string
+  current: boolean
+  terms: { id: string; name: string; current: boolean }[]
+}
+
 export default function TeacherDashboard() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -143,10 +150,11 @@ export default function TeacherDashboard() {
   const [students, setStudents] = useState<Student[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [classes, setClasses] = useState<Class[]>([])
+  const [academicSessions, setAcademicSessions] = useState<AcademicSession[]>([])
   const [selectedClass, setSelectedClass] = useState('')
   const [selectedSubject, setSelectedSubject] = useState('')
-  const [selectedSession, setSelectedSession] = useState('2024/2025')
-  const [selectedTerm, setSelectedTerm] = useState('First Term')
+  const [selectedSession, setSelectedSession] = useState('')
+  const [selectedTerm, setSelectedTerm] = useState('')
   const [showAddStudent, setShowAddStudent] = useState(false)
   const [showAddSubject, setShowAddSubject] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -224,6 +232,25 @@ export default function TeacherDashboard() {
       }
 
       setSubjects(subjectData || [])
+
+      // Sessions/terms are admin-managed (via /api/sessions) rather than
+      // hardcoded, so a newly added session shows up here without a
+      // code change. Default to whichever session/term is flagged current.
+      try {
+        const sessionsRes = await fetch('/api/sessions', { cache: 'no-store' })
+        const sessionsJson = await sessionsRes.json()
+        const sessionData: AcademicSession[] = sessionsJson.sessions || []
+        setAcademicSessions(sessionData)
+
+        const current = sessionData.find((s) => s.current) || sessionData[0]
+        if (current) {
+          setSelectedSession(current.name)
+          const currentTerm = (current.terms || []).find((t) => t.current) || current.terms?.[0]
+          if (currentTerm) setSelectedTerm(currentTerm.name)
+        }
+      } catch (sessionsError) {
+        console.error('[teacher/dashboard] Error fetching sessions:', sessionsError)
+      }
 
       if (classData && classData.length > 0) {
         setSelectedClass(classData[0].id)
@@ -787,12 +814,12 @@ export default function TeacherDashboard() {
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-ink dark:bg-gray-50 rounded-full flex items-center justify-center">
-                  <span className="text-milk dark:text-gray-950 font-display font-semibold text-sm">GF</span>
+                <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">PI</span>
                 </div>
                 <div>
-                  <h2 className="font-display text-lg font-semibold text-ink dark:text-gray-200">Teacher Portal</h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Good Foundation</p>
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Teacher Portal</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Progress International</p>
                 </div>
               </div>
               {/* Close button - only needed/shown on mobile where the sidebar overlays content */}
@@ -1152,7 +1179,7 @@ export default function TeacherDashboard() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Admission Number *</label>
                         <Input
-                          placeholder="GFI/24/0001"
+                          placeholder="PIS/24/0001"
                           value={newStudent.admission_number}
                           onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})}
                         />
@@ -1306,10 +1333,14 @@ export default function TeacherDashboard() {
                     value={selectedSession}
                     onChange={(e) => {
                       setSelectedSession(e.target.value)
+                      setSelectedTerm('')
                       if (selectedSubject) fetchGrid()
                     }}
                   >
-                    <option value="2026/2027">2026/2027</option>
+                    <option value="">Select Session</option>
+                    {academicSessions.map((s) => (
+                      <option key={s.id} value={s.name}>{s.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="flex-1 min-w-[150px]">
@@ -1321,10 +1352,12 @@ export default function TeacherDashboard() {
                       setSelectedTerm(e.target.value)
                       if (selectedSubject) fetchGrid()
                     }}
+                    disabled={!selectedSession}
                   >
-                    <option value="First Term">First Term</option>
-                    <option value="Second Term">Second Term</option>
-                    <option value="Third Term">Third Term</option>
+                    <option value="">Select Term</option>
+                    {(academicSessions.find((s) => s.name === selectedSession)?.terms || []).map((t) => (
+                      <option key={t.id} value={t.name}>{t.name}</option>
+                    ))}
                   </select>
                 </div>
               </div>
