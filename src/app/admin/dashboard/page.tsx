@@ -7,7 +7,7 @@ import {
   Users, 
   GraduationCap, 
   BookOpen, 
-  BarChart3, 
+  BarChart3,
   Home,
   LogOut,
   Menu,
@@ -21,7 +21,8 @@ import {
   AlertCircle,
   UserPlus,
   ClipboardList,
-  CreditCard
+  CreditCard,
+  Calendar
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,6 +39,7 @@ export default function AdminDashboard() {
   const [teachers, setTeachers] = useState<any[]>([])
   const [classes, setClasses] = useState<any[]>([])
   const [subjects, setSubjects] = useState<any[]>([])
+  const [sessions, setSessions] = useState<any[]>([])
   
   const [stats, setStats] = useState({
     totalStudents: 0,
@@ -49,6 +51,7 @@ export default function AdminDashboard() {
   const [showAddTeacher, setShowAddTeacher] = useState(false)
   const [showAddClass, setShowAddClass] = useState(false)
   const [showAddSubject, setShowAddSubject] = useState(false)
+  const [showAddSession, setShowAddSession] = useState(false)
 
   const [newStudent, setNewStudent] = useState({
     first_name: '',
@@ -78,6 +81,13 @@ export default function AdminDashboard() {
     name: '',
     class_id: '',
     teacher_id: ''
+  })
+
+  const [newSession, setNewSession] = useState({
+    name: '',
+    start_date: '',
+    end_date: '',
+    current: false
   })
 
   // Positions tab state
@@ -123,22 +133,25 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [studentsRes, teachersRes, classesRes, subjectsRes] = await Promise.all([
+      const [studentsRes, teachersRes, classesRes, subjectsRes, sessionsRes] = await Promise.all([
         fetch('/api/students', { cache: 'no-store' }).then(r => r.json()),
         fetch('/api/teachers', { cache: 'no-store' }).then(r => r.json()),
         fetch('/api/classes', { cache: 'no-store' }).then(r => r.json()),
         fetch('/api/subjects', { cache: 'no-store' }).then(r => r.json()),
+        fetch('/api/sessions', { cache: 'no-store' }).then(r => r.json()),
       ])
 
       const studentData = studentsRes.students || []
       const teacherData = teachersRes.teachers || []
       const classData = classesRes.classes || []
       const subjectData = subjectsRes.subjects || []
+      const sessionData = sessionsRes.sessions || []
 
       setStudents(studentData)
       setTeachers(teacherData)
       setClasses(classData)
       setSubjects(subjectData)
+      setSessions(sessionData)
 
       setStats({
         totalStudents: studentData.length,
@@ -395,6 +408,55 @@ export default function AdminDashboard() {
     }
   }
 
+  // ADD ACADEMIC SESSION
+  const handleAddSession = async () => {
+    if (!newSession.name) {
+      toast.error('Session name is required')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newSession.name,
+          start_date: newSession.start_date || null,
+          end_date: newSession.end_date || null,
+          current: newSession.current
+        })
+      })
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to add session')
+
+      toast.success('Academic session added successfully')
+      setShowAddSession(false)
+      setNewSession({ name: '', start_date: '', end_date: '', current: false })
+      fetchData()
+
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add session')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // DELETE ACADEMIC SESSION
+  const handleDeleteSession = async (id: string) => {
+    if (!confirm('Delete this academic session? Its terms will be deleted too.')) return
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/sessions?id=${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to delete')
+      toast.success('Academic session deleted')
+      fetchData()
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
 
   const navItems = [
@@ -403,6 +465,7 @@ export default function AdminDashboard() {
     { id: 'teachers', label: 'Teachers', icon: GraduationCap },
     { id: 'classes', label: 'Classes', icon: BookOpen },
     { id: 'subjects', label: 'Subjects', icon: ClipboardList },
+    { id: 'sessions', label: 'Sessions', icon: Calendar },
     { id: 'positions', label: 'Positions', icon: BarChart3 },
   ]
 
@@ -415,12 +478,12 @@ export default function AdminDashboard() {
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-ink dark:bg-gray-50 rounded-full flex items-center justify-center">
-                <span className="text-milk dark:text-gray-950 font-display font-semibold text-sm">GF</span>
+              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">PI</span>
               </div>
               <div>
-                <h2 className="font-display text-lg font-semibold text-ink dark:text-gray-200">Admin Portal</h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Good Foundation</p>
+                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Admin Portal</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Progress International</p>
               </div>
             </div>
           </div>
@@ -727,6 +790,46 @@ export default function AdminDashboard() {
                 </div>
               )}
 
+              {activeTab === 'sessions' && (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">Academic Sessions ({sessions.length})</h2>
+                    <Button onClick={() => setShowAddSession(true)}>
+                      <Plus className="h-4 w-4 mr-2" /> Add Session
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {sessions.map((s) => (
+                      <Card key={s.id}>
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold">{s.name}</h3>
+                                {s.current && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-400">
+                                    Current
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-500">
+                                {s.start_date || 'N/A'} &rarr; {s.end_date || 'N/A'}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                {(s.terms || []).length} term{(s.terms || []).length === 1 ? '' : 's'}
+                              </p>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteSession(s.id)}>
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {activeTab === 'positions' && (
                 <div>
                   <h2 className="text-2xl font-bold mb-4">Class Positions</h2>
@@ -743,7 +846,7 @@ export default function AdminDashboard() {
                       {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                     <Input
-                      placeholder="Session (e.g. 2026/2027)"
+                      placeholder="Session (e.g. 2024/2025)"
                       value={positionsSession}
                       onChange={(e) => setPositionsSession(e.target.value)}
                     />
@@ -913,6 +1016,56 @@ export default function AdminDashboard() {
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowAddSubject(false)}>Cancel</Button>
               <Button onClick={handleAddSubject} disabled={loading}>{loading ? 'Adding...' : 'Add Subject'}</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADD ACADEMIC SESSION MODAL */}
+      {showAddSession && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Add Academic Session</h2>
+              <button onClick={() => setShowAddSession(false)}><X className="h-6 w-6" /></button>
+            </div>
+            <div className="space-y-4">
+              <Input
+                placeholder="Session Name * (e.g. 2025/2026)"
+                value={newSession.name}
+                onChange={(e) => setNewSession({ ...newSession, name: e.target.value })}
+              />
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Start Date</label>
+                <Input
+                  type="date"
+                  value={newSession.start_date}
+                  onChange={(e) => setNewSession({ ...newSession, start_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">End Date</label>
+                <Input
+                  type="date"
+                  value={newSession.end_date}
+                  onChange={(e) => setNewSession({ ...newSession, end_date: e.target.value })}
+                />
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={newSession.current}
+                  onChange={(e) => setNewSession({ ...newSession, current: e.target.checked })}
+                />
+                Set as current session
+              </label>
+              <p className="text-xs text-gray-500">
+                First, Second, and Third Term are created automatically for this session.
+              </p>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button variant="outline" onClick={() => setShowAddSession(false)}>Cancel</Button>
+              <Button onClick={handleAddSession} disabled={loading}>{loading ? 'Adding...' : 'Add Session'}</Button>
             </div>
           </div>
         </div>
