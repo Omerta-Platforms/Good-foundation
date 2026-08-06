@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from "next/image";
 import { 
@@ -42,6 +42,13 @@ interface CheckedResult {
   position: number | null
 }
 
+interface AcademicSession {
+  id: string
+  name: string
+  current: boolean
+  terms: { id: string; name: string; current: boolean }[]
+}
+
 export default function ResultCheckerPage() {
   const [admissionNumber, setAdmissionNumber] = useState('')
   const [password, setPassword] = useState('')
@@ -50,6 +57,34 @@ export default function ResultCheckerPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<CheckedResult | null>(null)
   const [error, setError] = useState('')
+  const [academicSessions, setAcademicSessions] = useState<AcademicSession[]>([])
+
+  // Sessions/terms come from the admin-managed academic_sessions table
+  // (via our own API route, since this page has no logged-in Supabase
+  // session and RLS would otherwise block a direct read) rather than a
+  // hardcoded list, so a newly added session shows up here automatically.
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const res = await fetch('/api/sessions', { cache: 'no-store' })
+        const data = await res.json()
+        const sessionData: AcademicSession[] = data.sessions || []
+        setAcademicSessions(sessionData)
+
+        const current = sessionData.find((s) => s.current)
+        if (current) {
+          setSession(current.name)
+          const currentTerm = (current.terms || []).find((t) => t.current)
+          if (currentTerm) setTerm(currentTerm.name)
+        }
+      } catch (err) {
+        console.error('[result-checker] Error fetching sessions:', err)
+      }
+    }
+    fetchSessions()
+  }, [])
+
+  const selectedSessionTerms = academicSessions.find((s) => s.name === session)?.terms || []
 
   const handleCheckResult = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -183,12 +218,12 @@ export default function ResultCheckerPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-ink dark:bg-gray-50 rounded-full flex items-center justify-center">
-                <span className="text-milk dark:text-gray-950 font-display font-semibold text-sm">GF</span>
+              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">PI</span>
               </div>
               <div>
-                <h1 className="font-display text-lg font-semibold text-ink dark:text-gray-50">
-                  Good Foundation
+                <h1 className="text-lg font-bold text-primary-700 dark:text-primary-400">
+                  Progress International
                 </h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Group of Schools</p>
               </div>
@@ -210,7 +245,7 @@ export default function ResultCheckerPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="font-display text-3xl font-semibold text-ink dark:text-gray-200 mb-2">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2">
               Result Checker
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -231,7 +266,7 @@ export default function ResultCheckerPage() {
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                       <Input
                         type="text"
-                        placeholder="e.g., GFI/24/1234"
+                        placeholder="e.g., PIS/24/1234"
                         className="pl-10"
                         value={admissionNumber}
                         onChange={(e) => setAdmissionNumber(e.target.value)}
@@ -266,11 +301,16 @@ export default function ResultCheckerPage() {
                       <select
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
                         value={session}
-                        onChange={(e) => setSession(e.target.value)}
+                        onChange={(e) => {
+                          setSession(e.target.value)
+                          setTerm('')
+                        }}
                         required
                       >
                         <option value="">Select Session</option>
-                        <option value="2026/2027">2026/2027</option>
+                        {academicSessions.map((s) => (
+                          <option key={s.id} value={s.name}>{s.name}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -285,11 +325,12 @@ export default function ResultCheckerPage() {
                         value={term}
                         onChange={(e) => setTerm(e.target.value)}
                         required
+                        disabled={!session}
                       >
                         <option value="">Select Term</option>
-                        <option value="First Term">First Term</option>
-                        <option value="Second Term">Second Term</option>
-                        <option value="Third Term">Third Term</option>
+                        {selectedSessionTerms.map((t) => (
+                          <option key={t.id} value={t.name}>{t.name}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -335,7 +376,7 @@ export default function ResultCheckerPage() {
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                     <div>
-                      <h2 className="font-display text-2xl font-semibold text-ink dark:text-gray-200">
+                      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
                         {result.student.name}
                       </h2>
                       <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-sm">
@@ -417,7 +458,7 @@ export default function ResultCheckerPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Total Score</p>
-                        <p className="font-display text-2xl font-semibold text-ink dark:text-gray-200">{result.total}</p>
+                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{result.total}</p>
                       </div>
                       <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                         <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -431,7 +472,7 @@ export default function ResultCheckerPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Average</p>
-                        <p className="font-display text-2xl font-semibold text-ink dark:text-gray-200">{result.average}%</p>
+                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{result.average}%</p>
                       </div>
                       <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
                         <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -445,7 +486,7 @@ export default function ResultCheckerPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Subjects</p>
-                        <p className="font-display text-2xl font-semibold text-ink dark:text-gray-200">{result.subjects.length}</p>
+                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{result.subjects.length}</p>
                       </div>
                       <div className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
                         <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
@@ -459,7 +500,7 @@ export default function ResultCheckerPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Class Position</p>
-                        <p className="font-display text-2xl font-semibold text-ink dark:text-gray-200">
+                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">
                           {result.position ? ordinal(result.position) : 'N/A'}
                         </p>
                       </div>
@@ -504,7 +545,7 @@ export default function ResultCheckerPage() {
       <footer className="bg-gray-900 dark:bg-gray-950 text-white mt-12">
         <div className="container mx-auto px-4 py-6 text-center">
           <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} Good Foundation Group of Schools. All rights reserved.
+            &copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.
           </p>
           <p className="text-xs text-gray-500 mt-1">Knowledge for Progress</p>
         </div>
