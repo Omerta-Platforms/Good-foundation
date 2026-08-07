@@ -815,11 +815,11 @@ export default function TeacherDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">PI</span>
+                  <span className="text-white font-bold text-sm">GF</span>
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Teacher Portal</h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Progress International</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Good Foundation</p>
                 </div>
               </div>
               {/* Close button - only needed/shown on mobile where the sidebar overlays content */}
@@ -1179,7 +1179,7 @@ export default function TeacherDashboard() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Admission Number *</label>
                         <Input
-                          placeholder="PIS/24/0001"
+                          placeholder="GFI/24/0001"
                           value={newStudent.admission_number}
                           onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})}
                         />
