@@ -374,20 +374,6 @@ export default function AboutPage() {
               <p className="text-gray-400 text-sm mb-4">
                 Providing quality education and nurturing future leaders since 2000.
               </p>
-              <div className="flex space-x-3">
-                <Link href="#" className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                  <Facebook className="h-5 w-5" />
-                </Link>
-                <Link href="#" className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                  <Twitter className="h-5 w-5" />
-                </Link>
-                <Link href="#" className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                  <Instagram className="h-5 w-5" />
-                </Link>
-                <Link href="#" className="p-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors">
-                  <Youtube className="h-5 w-5" />
-                </Link>
-              </div>
             </div>
 
             {/* Contact */}
@@ -404,7 +390,7 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-center space-x-2">
                   <Mail className="h-5 w-5 text-primary-400" />
-                  <span>info@progressschools.edu.ng</span>
+                  <span>info@goodfoundation.edu.ng</span>
                 </li>
               </ul>
             </div>
