@@ -92,8 +92,8 @@ export default function HomePage() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Button
-                  variant="default"
+                <Button className="text-white border-white hover:bg-white/20">
+                  variant="outline"
                   size="lg"
                   onClick={() => {
                     window.location.href = 'mailto:info@goodfoumdation.edu.ng?subject=Admission%20Inquiry&body=Hello%20Good%20Foundation%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.'
