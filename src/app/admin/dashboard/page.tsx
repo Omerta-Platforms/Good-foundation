@@ -479,11 +479,11 @@ export default function AdminDashboard() {
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PI</span>
+                <span className="text-white font-bold text-sm">GF</span>
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Admin Portal</h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Progress International</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Good Foundation</p>
               </div>
             </div>
           </div>
