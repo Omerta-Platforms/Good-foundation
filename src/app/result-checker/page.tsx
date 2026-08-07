@@ -219,11 +219,11 @@ export default function ResultCheckerPage() {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PI</span>
+                <span className="text-white font-bold text-sm">GF</span>
               </div>
               <div>
                 <h1 className="text-lg font-bold text-primary-700 dark:text-primary-400">
-                  Progress International
+                  Good Foundation 
                 </h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Group of Schools</p>
               </div>
@@ -266,7 +266,7 @@ export default function ResultCheckerPage() {
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                       <Input
                         type="text"
-                        placeholder="e.g., PIS/24/1234"
+                        placeholder="e.g., GFI/24/1234"
                         className="pl-10"
                         value={admissionNumber}
                         onChange={(e) => setAdmissionNumber(e.target.value)}
@@ -545,7 +545,7 @@ export default function ResultCheckerPage() {
       <footer className="bg-gray-900 dark:bg-gray-950 text-white mt-12">
         <div className="container mx-auto px-4 py-6 text-center">
           <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} Progress International Group of Schools. All rights reserved.
+            &copy; {new Date().getFullYear()} Good Foundation Group of Schools. All rights reserved.
           </p>
           <p className="text-xs text-gray-500 mt-1">Knowledge for Progress</p>
         </div>
