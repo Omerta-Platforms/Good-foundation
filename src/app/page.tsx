@@ -92,11 +92,13 @@ export default function HomePage() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Button className="text-white border-white hover:bg-white/20">
+                <Button
                   variant="outline"
                   size="lg"
+                  className="bg-transparent text-ink border-ink hover:bg-gray-100"
                   onClick={() => {
-                    window.location.href = 'mailto:info@goodfoumdation.edu.ng?subject=Admission%20Inquiry&body=Hello%20Good%20Foundation%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.'
+                    window.location.href =
+                      'mailto:info@goodfoumdation.edu.ng?subject=Admission%20Inquiry&body=Hello%20Good%20Foundation%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.'
                   }}
                 >
                   Apply Now
