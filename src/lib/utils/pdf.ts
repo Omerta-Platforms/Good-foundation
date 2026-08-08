@@ -2,6 +2,9 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 
 export interface ReportCardSubject {
   name: string
+  ca1: number
+  ca2: number
+  exam_score: number
   score: number
   grade: string
   remark: string
@@ -76,7 +79,7 @@ export async function generateReportCard(data: ReportCardData): Promise<Uint8Arr
   y -= 12
 
   // Table header
-  const colX = { subject: 50, score: 300, grade: 380, remark: 450 }
+  const colX = { subject: 50, ca1: 220, ca2: 270, exam: 320, score: 380, grade: 430, remark: 480 }
   page.drawRectangle({
     x: 50,
     y: y - 6,
@@ -84,10 +87,13 @@ export async function generateReportCard(data: ReportCardData): Promise<Uint8Arr
     height: 24,
     color: primaryColor,
   })
-  page.drawText('Subject', { x: colX.subject + 6, y: y, size: 11, font: boldFont, color: rgb(1, 1, 1) })
-  page.drawText('Score', { x: colX.score, y: y, size: 11, font: boldFont, color: rgb(1, 1, 1) })
-  page.drawText('Grade', { x: colX.grade, y: y, size: 11, font: boldFont, color: rgb(1, 1, 1) })
-  page.drawText('Remark', { x: colX.remark, y: y, size: 11, font: boldFont, color: rgb(1, 1, 1) })
+  page.drawText('Subject', { x: colX.subject + 6, y: y, size: 10, font: boldFont, color: rgb(1, 1, 1) })
+  page.drawText('1CA', { x: colX.ca1, y: y, size: 10, font: boldFont, color: rgb(1, 1, 1) })
+  page.drawText('2CA', { x: colX.ca2, y: y, size: 10, font: boldFont, color: rgb(1, 1, 1) })
+  page.drawText('Exam', { x: colX.exam, y: y, size: 10, font: boldFont, color: rgb(1, 1, 1) })
+  page.drawText('Total', { x: colX.score, y: y, size: 10, font: boldFont, color: rgb(1, 1, 1) })
+  page.drawText('Grade', { x: colX.grade, y: y, size: 10, font: boldFont, color: rgb(1, 1, 1) })
+  page.drawText('Remark', { x: colX.remark, y: y, size: 10, font: boldFont, color: rgb(1, 1, 1) })
   y -= 30
 
   // Table rows
@@ -105,10 +111,13 @@ export async function generateReportCard(data: ReportCardData): Promise<Uint8Arr
       })
     }
 
-    page.drawText(subject.name, { x: colX.subject + 6, y, size: 10, font, color: black })
-    page.drawText(String(subject.score), { x: colX.score, y, size: 10, font, color: black })
-    page.drawText(subject.grade, { x: colX.grade, y, size: 10, font, color: black })
-    page.drawText(subject.remark, { x: colX.remark, y, size: 10, font, color: black })
+    page.drawText(subject.name, { x: colX.subject + 6, y, size: 9, font, color: black })
+    page.drawText(subject.ca1 != null ? String(subject.ca1) : '-', { x: colX.ca1, y, size: 9, font, color: black })
+    page.drawText(subject.ca2 != null ? String(subject.ca2) : '-', { x: colX.ca2, y, size: 9, font, color: black })
+    page.drawText(subject.exam_score != null ? String(subject.exam_score) : '-', { x: colX.exam, y, size: 9, font, color: black })
+    page.drawText(String(subject.score), { x: colX.score, y, size: 9, font, color: black })
+    page.drawText(subject.grade, { x: colX.grade, y, size: 9, font, color: black })
+    page.drawText(subject.remark, { x: colX.remark, y, size: 9, font, color: black })
 
     y -= 22
     rowIndex++
@@ -161,4 +170,4 @@ export function downloadPdfBytes(bytes: Uint8Array, filename: string) {
   URL.revokeObjectURL(url)
 }
 
-    
+                                 
