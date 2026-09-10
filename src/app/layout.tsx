@@ -18,9 +18,9 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Good Foundation Group of Schools',
-  description: 'A modern school management system for Good Foundation Group of Schools',
-  keywords: 'school, education, management, portal, good foundation',
+  title: 'Younik Group of Schools',
+  description: 'A modern school management system for Younik Group of Schools',
+  keywords: 'school, education, management, portal, younik',
 }
 
 export default function RootLayout({
