@@ -91,11 +91,16 @@ export default function HomePage() {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Link href="/about">
-                  <Button variant="outline" size="lg">
-                    Learn More
-                  </Button>
-                </Link>
+                <Button
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => {
+                    window.location.href = 'mailto:info@younik.edu.ng?subject=Admission%20Inquiry&body=Hello%20younik%2C%0A%0AI%20am%20interested%20in%20applying%20for%20my%20child.'
+                  }}
+                >
+                  Apply Now
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </div>
             </div>
           </div>
@@ -252,7 +257,7 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-center space-x-2">
                   <Phone className="h-5 w-5 text-primary-400" />
-                  <span>0700000000</span>
+                  <span>07000000000</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <Mail className="h-5 w-5 text-primary-400" />
