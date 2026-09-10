@@ -746,9 +746,7 @@ export default function TeacherDashboard() {
   // 8. DOWNLOAD RESULT TEMPLATE
   const downloadResultTemplate = () => {
     const template = [
-      { admission_number: 'PIS/24/0001', ca1: 18, ca2: 17, exam_score: 55 },
-      { admission_number: 'PIS/24/0002', ca1: 15, ca2: 14, exam_score: 48 },
-      { admission_number: 'PIS/24/0003', ca1: 12, ca2: 13, exam_score: 40 }
+      { admission_number: 'YOU/24/0001', ca1: 18, ca2: 17, exam_score: 55 },
     ]
     
     const ws = XLSX.utils.json_to_sheet(template)
@@ -918,9 +916,6 @@ export default function TeacherDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <Bell className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-              </button>
             </div>
           </div>
         </header>
@@ -1183,7 +1178,7 @@ export default function TeacherDashboard() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Admission Number *</label>
                         <Input
-                          placeholder="PIS/24/0001"
+                          placeholder="YOU/24/0001"
                           value={newStudent.admission_number}
                           onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})}
                         />
