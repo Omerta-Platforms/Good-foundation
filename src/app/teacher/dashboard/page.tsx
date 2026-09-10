@@ -8,6 +8,7 @@ import {
   GraduationCap, 
   BookOpen, 
   BarChart3,
+  Bell, 
   Download,
   Eye,
   Edit,
@@ -814,12 +815,12 @@ export default function TeacherDashboard() {
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">GF</span>
+                <div className="w-10 h-10 bg-ink dark:bg-gray-50 rounded-full flex items-center justify-center">
+                  <span className="text-milk dark:text-gray-950 font-display font-semibold text-sm">Y</span>
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Teacher Portal</h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Good Foundation</p>
+                  <h2 className="font-display text-lg font-semibold text-ink dark:text-gray-200">Teacher Portal</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Younik</p>
                 </div>
               </div>
               {/* Close button - only needed/shown on mobile where the sidebar overlays content */}
@@ -917,6 +918,9 @@ export default function TeacherDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
+              <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <Bell className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+              </button>
             </div>
           </div>
         </header>
@@ -1179,7 +1183,7 @@ export default function TeacherDashboard() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Admission Number *</label>
                         <Input
-                          placeholder="GFI/24/0001"
+                          placeholder="PIS/24/0001"
                           value={newStudent.admission_number}
                           onChange={(e) => setNewStudent({...newStudent, admission_number: e.target.value})}
                         />
