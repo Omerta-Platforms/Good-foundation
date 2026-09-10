@@ -1,4 +1,4 @@
-# Good Foundation Group of Schools — Portal
+# Younik Group of Schools — Portal
 
 A school management system built with Next.js, TypeScript, and Supabase. Covers a public marketing site, a public result checker, and three role-based dashboards (Admin, Teacher, Student).
 
@@ -107,4 +107,3 @@ src/
 - The admin dashboard is **not** protected by Supabase Auth — it's a single shared password behind `middleware.ts` + an httpOnly cookie. Treat `ADMIN_DASHBOARD_PASSWORD` like any other production secret.
 - Student and teacher accounts use Supabase Auth; each login page double-checks the user's `role` metadata and matching table row before letting them in, and signs them back out if either check fails.
 - The public result checker never receives `password_hash` from the server — verification happens inside the `check_student_results` Postgres function, and only published results are returned.
-- 
