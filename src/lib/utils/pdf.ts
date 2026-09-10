@@ -41,7 +41,7 @@ export async function generateReportCard(data: ReportCardData): Promise<Uint8Arr
   let y = height - 50
 
   // Header
-  page.drawText('Good Foundation Group of Schools', {
+  page.drawText('Younik Group of Schools', {
     x: 50,
     y,
     size: 18,
@@ -169,5 +169,4 @@ export function downloadPdfBytes(bytes: Uint8Array, filename: string) {
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 }
-
-                                 
+    
