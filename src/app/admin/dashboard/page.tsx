@@ -8,6 +8,7 @@ import {
   GraduationCap, 
   BookOpen, 
   BarChart3,
+  Bell, 
   Home,
   LogOut,
   Menu,
@@ -22,6 +23,7 @@ import {
   UserPlus,
   ClipboardList,
   CreditCard,
+  Settings,
   Calendar
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -478,12 +480,12 @@ export default function AdminDashboard() {
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">GF</span>
+              <div className="w-10 h-10 bg-ink dark:bg-gray-50 rounded-full flex items-center justify-center">
+                <span className="text-milk dark:text-gray-950 font-display font-semibold text-sm">Y</span>
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Admin Portal</h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Good Foundation</p>
+                <h2 className="font-display text-lg font-semibold text-ink dark:text-gray-200">Admin Portal</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Younik</p>
               </div>
             </div>
           </div>
@@ -563,6 +565,12 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Bell className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+              </button>
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Settings className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+              </button>
             </div>
           </div>
         </header>
