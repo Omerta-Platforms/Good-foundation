@@ -218,12 +218,12 @@ export default function ResultCheckerPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">GF</span>
+              <div className="w-10 h-10 bg-ink dark:bg-gray-50 rounded-full flex items-center justify-center">
+                <span className="text-milk dark:text-gray-950 font-display font-semibold text-sm">Y</span>
               </div>
               <div>
-                <h1 className="text-lg font-bold text-primary-700 dark:text-primary-400">
-                  Good Foundation 
+                <h1 className="font-display text-lg font-semibold text-ink dark:text-gray-50">
+                  Younik
                 </h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Group of Schools</p>
               </div>
@@ -245,7 +245,7 @@ export default function ResultCheckerPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+            <h1 className="font-display text-3xl font-semibold text-ink dark:text-gray-200 mb-2">
               Result Checker
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
@@ -266,7 +266,7 @@ export default function ResultCheckerPage() {
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                       <Input
                         type="text"
-                        placeholder="e.g., GFI/24/1234"
+                        placeholder="e.g., PIS/24/1234"
                         className="pl-10"
                         value={admissionNumber}
                         onChange={(e) => setAdmissionNumber(e.target.value)}
@@ -376,7 +376,7 @@ export default function ResultCheckerPage() {
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                      <h2 className="font-display text-2xl font-semibold text-ink dark:text-gray-200">
                         {result.student.name}
                       </h2>
                       <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-sm">
@@ -458,7 +458,7 @@ export default function ResultCheckerPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Total Score</p>
-                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{result.total}</p>
+                        <p className="font-display text-2xl font-semibold text-ink dark:text-gray-200">{result.total}</p>
                       </div>
                       <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                         <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -472,7 +472,7 @@ export default function ResultCheckerPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Average</p>
-                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{result.average}%</p>
+                        <p className="font-display text-2xl font-semibold text-ink dark:text-gray-200">{result.average}%</p>
                       </div>
                       <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
                         <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -486,7 +486,7 @@ export default function ResultCheckerPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Subjects</p>
-                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">{result.subjects.length}</p>
+                        <p className="font-display text-2xl font-semibold text-ink dark:text-gray-200">{result.subjects.length}</p>
                       </div>
                       <div className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
                         <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
@@ -500,7 +500,7 @@ export default function ResultCheckerPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">Class Position</p>
-                        <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                        <p className="font-display text-2xl font-semibold text-ink dark:text-gray-200">
                           {result.position ? ordinal(result.position) : 'N/A'}
                         </p>
                       </div>
@@ -545,7 +545,7 @@ export default function ResultCheckerPage() {
       <footer className="bg-gray-900 dark:bg-gray-950 text-white mt-12">
         <div className="container mx-auto px-4 py-6 text-center">
           <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} Good Foundation Group of Schools. All rights reserved.
+            &copy; {new Date().getFullYear()} Younik Group of Schools. All rights reserved.
           </p>
           <p className="text-xs text-gray-500 mt-1">Knowledge for Progress</p>
         </div>
