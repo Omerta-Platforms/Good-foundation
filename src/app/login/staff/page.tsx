@@ -107,7 +107,7 @@ export default function StaffLoginPage() {
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                   <Input
                     type="email"
-                    placeholder="teacher@goodfoundation.edu"
+                    placeholder="teacher@younik.edu"
                     className="pl-10"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -167,7 +167,7 @@ export default function StaffLoginPage() {
               </p>
               <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <span className="font-medium">Email:</span> teacher@goodfoundation.edu
+                  <span className="font-medium">Email:</span> teacher@younik.edu
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   <span className="font-medium">Password:</span> password123
